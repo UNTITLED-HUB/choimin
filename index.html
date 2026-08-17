@@ -604,25 +604,22 @@
     <script>
         /* --- 탭 및 페이지 전환 스크립트 --- */
         function switchTab(tabId) {
-            // 모든 뷰 비활성화
             const views = document.querySelectorAll('.page-view');
             views.forEach(v => v.classList.remove('active'));
 
-            // 모든 네비 링크 활성화 해제
             const navLinks = document.querySelectorAll('.nav-links a');
             navLinks.forEach(l => l.classList.remove('active'));
 
-            // 해당 뷰 및 네비 버튼 활성화
             const targetView = document.getElementById(`view-${tabId}`);
             if (targetView) targetView.classList.add('active');
 
             const targetNav = document.getElementById(`nav-${tabId}`);
             if (targetNav) targetNav.classList.add('active');
 
-            // AI 화면 진입 시 입력창 포커스
             if (tabId === 'ai') {
                 setTimeout(() => {
-                    document.getElementById('user-input').focus();
+                    const inputEl = document.getElementById('user-input');
+                    if (inputEl) inputEl.focus();
                 }, 100);
             }
         }
@@ -754,6 +751,7 @@
 
         function typeWriterEffect(element, text, speed = 25) {
             return new Promise(resolve => {
+                if (!element) return resolve();
                 element.classList.add('typing-cursor');
                 element.textContent = "";
                 const chatContainer = document.getElementById('chat-container');
@@ -762,7 +760,7 @@
                 function typeNext() {
                     if (i < text.length) {
                         element.textContent += text.charAt(i);
-                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
                         i++;
                         setTimeout(typeNext, speed);
                     } else {
@@ -778,6 +776,8 @@
             if (isGenerating) return;
 
             const input = document.getElementById('user-input');
+            if (!input) return;
+
             const query = input.value.trim();
             if (!query) return;
 
@@ -790,6 +790,7 @@
             }
 
             const chatContainer = document.getElementById('chat-container');
+            if (!chatContainer) return;
 
             const userWrapper = document.createElement('div');
             userWrapper.className = 'message-wrapper user';
@@ -829,40 +830,48 @@
 
             const { thought, response, timeMs } = generateChoiminiData(query);
 
-            msgEl.textContent = "생각하는 중...";
+            if (msgEl) msgEl.textContent = "생각하는 중...";
             await new Promise(r => setTimeout(r, parseFloat(timeMs) * 1000));
 
-            thoughtEl.textContent = thought;
-            await typeWriterEffect(msgEl, response, 30);
-            toolbarEl.classList.remove('disabled');
+            if (thoughtEl) thoughtEl.textContent = thought;
+            if (msgEl) await typeWriterEffect(msgEl, response, 30);
+            if (toolbarEl) toolbarEl.classList.remove('disabled');
         }
 
         async function handleRegenerate(btn) {
             if (isGenerating) return;
 
             const botWrapper = btn.closest('.message-wrapper.bot');
+            if (!botWrapper) return;
+
             const prompt = botWrapper.dataset.prompt || "알 수 없음";
             const msgEl = botWrapper.querySelector('.message');
             const thoughtEl = botWrapper.querySelector('.thought-box');
             const toolbarEl = botWrapper.querySelector('.action-toolbar');
 
             setUIState(true);
-            toolbarEl.classList.add('disabled');
+            if (toolbarEl) {
+                toolbarEl.classList.add('disabled');
+                toolbarEl.querySelectorAll('.action-btn').forEach(b => {
+                    if (b.title === '좋아요' || b.title === '실어요') b.classList.remove('active');
+                });
+            }
 
-            toolbarEl.querySelectorAll('.action-btn').forEach(b => {
-                if (b.title === '좋아요' || b.title === '실어요') b.classList.remove('active');
-            });
-
-            await processBotOutput(botWrapper, prompt, msgEl.id, thoughtEl.id);
+            if (msgEl && thoughtEl) {
+                await processBotOutput(botWrapper, prompt, msgEl.id, thoughtEl.id);
+            }
             setUIState(false);
         }
 
         function setUIState(loading) {
             isGenerating = loading;
-            document.getElementById('send-btn').disabled = loading;
-            document.getElementById('user-input').disabled = loading;
-            if (!loading) {
-                document.getElementById('user-input').focus();
+            const sendBtn = document.getElementById('send-btn');
+            const userInput = document.getElementById('user-input');
+
+            if (sendBtn) sendBtn.disabled = loading;
+            if (userInput) {
+                userInput.disabled = loading;
+                if (!loading) userInput.focus();
             }
         }
 
@@ -881,7 +890,9 @@
         }
 
         function handleCopy(msgId) {
-            const text = document.getElementById(msgId).innerText;
+            const msgEl = document.getElementById(msgId);
+            if (!msgEl) return;
+            const text = msgEl.innerText;
             navigator.clipboard.writeText(text).then(() => {
                 showToast("복사되었습니다! 📃");
             });
@@ -897,6 +908,7 @@
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
+            if (!toast) return;
             toast.innerText = msg;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2000);

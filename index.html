@@ -1185,7 +1185,7 @@
         }
 
         function generateChoiminiData(text) {
-            const cleanText = text.trim();
+            const cleanText = text.trim().normalize('NFC');
             const timeMs = (Math.random() * 1.5 + 0.8).toFixed(1);
 
             // 새로운 사고 과정 포맷
@@ -1296,7 +1296,9 @@
             const msgEl = document.getElementById(msgId);
             const thoughtEl = document.getElementById(thoughtId);
             const toolbarEl = botWrapper.querySelector('.action-toolbar');
-            const cleanText = query.trim();
+            // NFC 정규화: 일부 환경(macOS 등)에서 한글이 자모 분해형(NFD)으로 입력되면
+            // 완성형 음절 비교(사전 조회, 두음법칙 등)가 전부 실패하므로 반드시 정규화한다.
+            const cleanText = query.trim().normalize('NFC');
 
             // "한판 더?" 질문 뒤 재시작 응답 처리 (게임이 방금 끝난 대기 상태)
             if (wordChainGame.awaitingRestart) {
@@ -1362,6 +1364,17 @@
             const validation = validateUserWord(cleanText);
 
             if (!validation.valid) {
+                // 디버깅용: 어떤 사유로 막혔는지 사고과정에 상세히 기록 (⛓️ 버튼으로 확인 가능)
+                const reasonLabel = {
+                    not_korean: '한글이 아닌 문자가 포함됨',
+                    too_short: '2글자 미만',
+                    duplicate: '이미 사용된 단어',
+                    wrong_start: `시작 글자 불일치 (이전 단어 끝: '${wordChainGame.lastWord[wordChainGame.lastWord.length-1]}', 입력 시작: '${cleanText[0]}')`,
+                    always_word: '무조건 한방단어(always)임',
+                    no_data: '단어 데이터 로드 안 됨'
+                }[validation.reason] || validation.reason;
+                thoughtEl.textContent += `\n\nValidation failed: ${reasonLabel}`;
+
                 const lastChar = wordChainGame.lastWord[wordChainGame.lastWord.length - 1];
                 const failMsg = `반사! ${lastChar}로 시작하는 단어를 다시 입력하세요 ㅋ`;
                 await typeWriterEffect(msgEl, failMsg, 10);
@@ -1725,16 +1738,30 @@
             if (wordChainGame.wordsData) return wordChainGame.wordsData;
             try {
                 const res = await fetch('https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json');
-                const data = await res.json();
+                const rawData = await res.json();
+
+                // 원본 데이터도 NFC로 정규화 (소스가 어떤 형태로 인코딩되어 있든 일관성 보장)
+                const data = {
+                    always: (rawData.always || []).map(w => w.normalize('NFC')),
+                    normal: {},
+                    attack: {}
+                };
+                const rawNormal = rawData.normal || {};
+                for (const key in rawNormal) {
+                    data.normal[key.normalize('NFC')] = rawNormal[key].map(w => w.normalize('NFC'));
+                }
+                const rawAttack = rawData.attack || {};
+                for (const key in rawAttack) {
+                    data.attack[key.normalize('NFC')] = rawAttack[key].map(w => w.normalize('NFC'));
+                }
+
                 wordChainGame.wordsData = data;
 
                 // 빠른 조회를 위한 전체 단어 Set 사전 구축 (O(1) 존재 검사)
                 const allWordsSet = new Set();
-                (data.always || []).forEach(w => allWordsSet.add(w));
-                const normalDict = data.normal || {};
-                for (const key in normalDict) normalDict[key].forEach(w => allWordsSet.add(w));
-                const attackDict = data.attack || {};
-                for (const key in attackDict) attackDict[key].forEach(w => allWordsSet.add(w));
+                data.always.forEach(w => allWordsSet.add(w));
+                for (const key in data.normal) data.normal[key].forEach(w => allWordsSet.add(w));
+                for (const key in data.attack) data.attack[key].forEach(w => allWordsSet.add(w));
                 wordChainGame.allWordsSet = allWordsSet;
 
                 return data;

@@ -1848,6 +1848,8 @@
         }
 
         // 사용자가 입력한 단어가 유효한지 검증
+        // 데이터셋(kr_words.json)이 옛말/방언 위주로 좁아서, 표준어인데 사전에 없어
+        // 억울하게 반사당하는 걸 막기 위해 형식 규칙만 맞으면 관대하게 인정한다.
         // 반환: { valid: bool, reason: string }
         function validateUserWord(word) {
             const data = wordChainGame.wordsData;
@@ -1862,9 +1864,10 @@
             const head = word[0];
             if (!isValidChainLetter(prevTail, head)) return { valid: false, reason: 'wrong_start' };
 
-            // 사전에 존재하는 단어인지 확인 (Set 기반 O(1) 조회)
-            const exists = wordChainGame.allWordsSet && wordChainGame.allWordsSet.has(word);
-            if (!exists) return { valid: false, reason: 'not_in_dict' };
+            // always(한방단어)만 명시적으로 차단. 그 외에는 사전 등재 여부와 무관하게 인정
+            // (데이터셋이 좁아 표준어까지 반사시키는 문제를 막기 위함)
+            const alwaysSet = new Set(data.always || []);
+            if (alwaysSet.has(word)) return { valid: false, reason: 'always_word' };
 
             return { valid: true, reason: 'ok' };
         }

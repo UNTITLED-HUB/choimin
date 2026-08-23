@@ -907,16 +907,19 @@
             // 1. 최민
             { 
                 regex: /^최민$|ㅊㅁ/i, 
+                keywords: ["최민", "ㅊㅁ"],
                 responses: ["최민최민최최민준 😏"] 
             },
             // 2. 끼복끼
             { 
                 regex: /끼복끼|기복기|끼볶끼|기볶기/i, 
+                keywords: ["끼복끼", "기복기", "끼볶끼", "기볶기"],
                 responses: ["끼복끼복끼 😶"] 
             },
             // 3. MD
             { 
                 regex: /엠디|엠뒤|앰디|앰뒤|^md$|^MD$/i, 
+                keywords: ["엠디", "엠뒤", "앰디", "앰뒤", "md", "MD"],
                 responses: [
                     "# MD는 여러 의미가 있습니다. 😶\nA. MarkDown의 약자. 📃\n프로그램 설명서 역할을 하며, 주로 README.md로 사용함.\nC. 익스큐터 이름\nMadium 익스큐터의 약자. ✌️\nMadium 익스큐터는 훌룡한 성능을 가진 키리스 로블록스 집행자 입니다.\n공식 디스코드 : https://discord.com/invite/madium\nE. 욕설\nMD > 엠디 > 엠뒤 발음으로, 욕으로 사용될 수 있음. 😡\n하지만 이건 윤주성이나 쓰는거기때문에..."
                 ] 
@@ -924,6 +927,7 @@
             // 4. jCAPTCHA
             { 
                 regex: /captcha|jCAPTCHA|캡챠|로봇이|윤주성/i, 
+                keywords: ["captcha", "jCAPTCHA", "캡챠", "로봇이", "윤주성이"],
                 responses: [
                     "# jCAPTCHA란 무엇인가요? 🤨\njCPATCHA는 윤주성을 막기 위해 만들어진 캡챠 서비스 입니다. 🤖\n서버 없이 클라이언트에서 작동하는 방식이라, 실제 봇 유저들은 차단하지 못할 수 있지만 🤔\n윤주성은 그런거 못하니 상관없습니다. 😏"
                 ] 
@@ -931,6 +935,7 @@
             // 5. 확장앱
             { 
                 regex: /확장앱|^확장$/i, 
+                keywords: ["확장앱", "확장"],
                 responses: [
                     "잠시만 기다려주세요.. 곧 다운로드가 시작됩니다. ☢️"
                 ] 
@@ -938,6 +943,7 @@
             // 6. 냥코
             { 
                 regex: /냥코|대전쟁/i, 
+                keywords: ["냥코", "대전쟁"],
                 responses: [
                     "# 냥코대전쟁 에디터 사용법 ✨️\n핵쓰지마라고 최민"
                 ] 
@@ -945,6 +951,7 @@
             // 7. 계정/해킹
             { 
                 regex: /계정|해킹|복구/i, 
+                keywords: ["계정", "해킹", "복구"],
                 responses: [
                     "귀하의 계정을 해킹하는중... 😈"
                 ] 
@@ -952,6 +959,7 @@
             // 8. 귀트
             { 
                 regex: /귀트/i, 
+                keywords: ["귀트"],
                 responses: [
                     "귀트릭스 링크를 제공해드리겠습니다. 🤨\n\nhttps://www.youtube.com/watch?v=8k05ouQVk8A\nhttps://www.youtube.com/watch?v=ZfsDVm5RDzQ\nhttps://www.youtube.com/watch?v=NHl4spFuR6w\nhttps://www.youtube.com/watch?v=g9CNcng117I\nhttps://www.youtube.com/watch?v=n_VJ9Gbgzfk"
                 ] 
@@ -959,6 +967,7 @@
             // 9. 욕설 반사
             { 
                 regex: /^반사$|^욕설$/i, 
+                keywords: ["반사", "욕설"],
                 responses: [
                     "반사 😶‍🌫️"
                 ] 
@@ -966,6 +975,7 @@
             // 10. 안녕
             { 
                 regex: /안녕|ㅎㅇ|ㅎ2|반가워/i, 
+                keywords: ["안녕", "ㅎㅇ", "ㅎ2", "반가워"],
                 responses: [
                     "최민준님! 오늘은 어떻게 저를 고문하실건가요? 🤔",
                     "안안녕하세요 최민준님 😏"
@@ -974,6 +984,7 @@
             // 11. 누구
             { 
                 regex: /^누구$|^너$|소개/i, 
+                keywords: ["누구", "너", "소개"],
                 responses: [
                     "저는 윤주성을 기반으로 만들어진 AI 어시스턴트 입니다 🤖"
                 ] 
@@ -981,6 +992,7 @@
             // 12. 야
             { 
                 regex: /^야$|최미나이/i, 
+                keywords: ["야", "최미나이"],
                 responses: [
                     "왜 😏"
                 ] 
@@ -988,6 +1000,7 @@
             // 13. 하트
             { 
                 regex: /하트|좋아해|❤️|😻|😍|🥰/i, 
+                keywords: ["하트", "좋아해", "❤️", "😻", "😍", "🥰"],
                 responses: [
                     "그래 주성아 사망해 🤐"
                 ] 
@@ -995,6 +1008,7 @@
             // 14. 도와줘
             { 
                 regex: /도와줘|헬프|핼프|^help$/i, 
+                keywords: ["도와줘", "헬프", "핼프", "help"],
                 responses: [
                     "싫다면? 😒"
                 ] 
@@ -1002,6 +1016,7 @@
             // 15. 싫어
             { 
                 regex: /싫다면|실다면|싫어/i, 
+                keywords: ["싫다면", "실다면", "싫어"],
                 responses: [
                     "그래 너 최민준 해 🙃"
                 ] 
@@ -1009,6 +1024,7 @@
             // 16. 반사
             { 
                 regex: /^반사$/i, 
+                keywords: ["반사"],
                 responses: [
                     "응 카타나 🛡🛡🛡😶"
                 ] 
@@ -1016,6 +1032,7 @@
             // 17. 카타나
             { 
                 regex: /카타나/i, 
+                keywords: ["카타나"],
                 responses: [
                     "주성아 게임 그만좀 해라 🎮\n여긴 현실이야! 정신 차려 😩"
                 ] 
@@ -1023,6 +1040,7 @@
             // 18. 물음표
             { 
                 regex: /^\?+$/i, 
+                keywords: ["?"],
                 responses: [
                     "🫪🫪🫪"
                 ] 
@@ -1030,6 +1048,7 @@
             // 19. LNC
             { 
                 regex: /lnc|llc|nnc/i, 
+                keywords: ["lnc", "llc", "nnc"],
                 responses: [
                     "# Choimin.Lnc가 뭘까요?\nChoimin.Lnc는 다앙한 프로그램을 만들었으며\n저(최미나이)와 비롯한 다양한것들 (jCAPTCHA)을 만들고 있습니다."
                 ] 
@@ -1037,8 +1056,9 @@
             // 20. 이미지
             { 
                 regex: /이미지|그림|사진|그려줘/i, 
+                keywords: ["이미지", "그림", "사진", "그려줘"],
                 responses: [
-                    "알겠습니다. (그림 그리는중..)  🖌 🎨"
+                    "알겠습니다. (그림 그리는중..)  🖌 🎨\n```\n                 __\n                /  \\\n               /    \\\n              /      \\\n             |        |\n             |        |\n             |        |\n             |        |\n             |        |\n          ___|        |___\n        _/                 \\_\n      _/                     \\_\n     /                         \\\n    |                           |\n    |                           |\n    |                           |\n     \\                         /\n      \\__                   __/\n         \\___           ___/\n             \\_________/\n```"
                 ] 
             },
         ];
@@ -1047,6 +1067,87 @@
 
         function getRandomElement(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        /* --- 문자열 유사도 (Levenshtein Distance 기반) --- */
+        function levenshteinDistance(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        // 키워드 길이에 따른 허용 오차(edit distance). 응답 항목이 적어 관대하게 설정
+        function maxAllowedDistance(kwLen) {
+            if (kwLen <= 1) return 0;  // 1글자는 정확히만
+            if (kwLen <= 3) return 1;  // 2~3글자는 오타 1글자까지 허용
+            if (kwLen <= 6) return 2;  // 4~6글자는 오타 2글자까지 허용
+            return 3;                   // 7글자 이상은 오타 3글자까지 허용
+        }
+
+        // 텍스트 안에서 키워드와 가장 유사한 부분을 찾아 0~1 유사도 점수 반환
+        function findBestSimilarity(text, keyword) {
+            const kw = keyword.toLowerCase();
+            const t = text.toLowerCase();
+
+            // 키워드가 통째로 포함되면 만점
+            if (t.includes(kw)) return 1.0;
+
+            const allowedDist = maxAllowedDistance(kw.length);
+            if (allowedDist < 0) return 0;
+
+            const winLen = kw.length;
+            let minDist = Infinity;
+
+            // 슬라이딩 윈도우(키워드 길이 -1~+1)로 텍스트 내 최적 구간 탐색
+            for (let w = Math.max(1, winLen - 1); w <= winLen + 1; w++) {
+                for (let i = 0; i <= t.length - w; i++) {
+                    const window = t.substring(i, i + w);
+                    const dist = levenshteinDistance(window, kw);
+                    if (dist < minDist) minDist = dist;
+                }
+            }
+
+            if (minDist <= allowedDist) {
+                return 1 - (minDist / (kw.length + allowedDist));
+            }
+            return 0;
+        }
+
+        // intentDB 전체에서 가장 유사한 항목 탐색 (임계값 이상만 반환)
+        function findClosestIntent(text, threshold = 0.45) {
+            let bestMatch = null;
+            let bestScore = 0;
+
+            for (let i = 0; i < intentDB.length; i++) {
+                const keywords = intentDB[i].keywords || [];
+                for (let k = 0; k < keywords.length; k++) {
+                    const score = findBestSimilarity(text, keywords[k]);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = intentDB[i];
+                    }
+                }
+            }
+
+            if (bestScore >= threshold) {
+                return bestMatch;
+            }
+            return null;
         }
 
         function generateChoiminiData(text) {
@@ -1079,6 +1180,13 @@
                     response = getRandomElement(intentDB[i].responses);
                     return { thought, response, timeMs };
                 }
+            }
+
+            // 정규식 매칭 실패 → 유사도 점수 기반 fallback 탐색 (오타/유사 단어 대응)
+            const closestIntent = findClosestIntent(cleanText, 0.45);
+            if (closestIntent) {
+                response = getRandomElement(closestIntent.responses);
+                return { thought, response, timeMs };
             }
 
             // 등록되지 않은 응답 → 최민 응답
@@ -1133,7 +1241,7 @@
 
             const userWrapper = document.createElement('div');
             userWrapper.className = 'message-wrapper user';
-            userWrapper.innerHTML = `<div class="message">${escapeHtml(query)}</div>`;
+            userWrapper.innerHTML = `<div class="message">${renderMarkdown(query)}</div>`;
             chatContainer.appendChild(userWrapper);
 
             const botWrapper = document.createElement('div');
@@ -1276,8 +1384,21 @@
         }
 
         /* --- 마크다운 포맷 렌더링 --- */
+        let codeBlockCounter = 0;
+
         function renderMarkdown(text) {
             let html = escapeHtml(text);
+            
+            // 코드 블록 (```) - 줄바꿈 치환 전에 먼저 처리, 복사 버튼 포함
+            html = html.replace(/```([\s\S]*?)```/g, function(match, code) {
+                const trimmedCode = code.replace(/^\n/, '').replace(/\n$/, '');
+                const blockId = 'codeblock-' + (codeBlockCounter++);
+                const escapedForAttr = trimmedCode.replace(/"/g, '&quot;');
+                return `<div style="position: relative; margin: 0.5rem 0;">
+                    <pre id="${blockId}" style="background-color: var(--thought-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; padding-top: 2.2rem; overflow-x: auto; font-family: monospace; font-size: 0.85rem; white-space: pre; margin: 0;">${trimmedCode}</pre>
+                    <button onclick="copyCodeBlock('${blockId}')" style="position: absolute; top: 6px; right: 6px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.75rem;">📋 복사</button>
+                </div>`;
+            });
             
             // 제목 (# 처리) - 큰 글씨로
             html = html.replace(/^#\s+(.+)$/gm, '<span style="font-size: 1.3rem; font-weight: bold; color: var(--accent-color); display: block; margin: 0.5rem 0;">$1</span>');
@@ -1288,10 +1409,20 @@
             // URL 링크 - 파란색
             html = html.replace(/(https?:\/\/[^\s<>]+)/g, '<a href="$1" target="_blank" style="color: #00a8ff; text-decoration: underline; cursor: pointer;">$1</a>');
             
-            // 줄바꿈
+            // 줄바꿈 (코드 블록 내부는 이미 <pre>로 감싸져 있어 영향 없음)
             html = html.replace(/\n/g, '<br>');
             
             return html;
+        }
+
+        // 코드 블록 복사 함수
+        function copyCodeBlock(blockId) {
+            const el = document.getElementById(blockId);
+            if (!el) return;
+            const text = el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('코드가 복사되었습니다! 📋');
+            });
         }
 
         /* --- 파일 다운로드 함수 --- */

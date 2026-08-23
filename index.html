@@ -1058,7 +1058,31 @@
                 regex: /이미지|그림|사진|그려줘/i, 
                 keywords: ["이미지", "그림", "사진", "그려줘"],
                 responses: [
-                    "알겠습니다. (그림 그리는중..)  🖌 🎨\n```\n                 __\n                /  \\\n               /    \\\n              /      \\\n             |        |\n             |        |\n             |        |\n             |        |\n             |        |\n          ___|        |___\n        _/                 \\_\n      _/                     \\_\n     /                         \\\n    |                           |\n    |                           |\n    |                           |\n     \\                         /\n      \\__                   __/\n         \\___           ___/\n             \\_________/\n```"
+                    "알겠습니다. (그림 그리는중..)  🖌 🎨[[IMAGE_DELAY]]```\n                 __\n                /  \\\n               /    \\\n              /      \\\n             |        |\n             |        |\n             |        |\n             |        |\n             |        |\n          ___|        |___\n        _/                 \\_\n      _/                     \\_\n     /                         \\\n    |                           |\n    |                           |\n    |                           |\n     \\                         /\n      \\__                   __/\n         \\___           ___/\n             \\_________/\n```"
+                ] 
+            },
+            // 21. 새 채팅
+            { 
+                regex: /새\s*채팅/i, 
+                keywords: ["새 채팅"],
+                responses: [
+                    "새 채팅?\n걍 이 페이지 새로고침함 ㅅㄱ[[RELOAD_PAGE]]"
+                ] 
+            },
+            // 22. 류준
+            { 
+                regex: /류준|유준|이류준/i, 
+                keywords: ["류준", "유준", "이류준"],
+                responses: [
+                    "나 이류준 넘어트릴 수 있어"
+                ] 
+            },
+            // 23. 넘어
+            { 
+                regex: /넘어지게|넘어져|넘어뜨|넘어트|^넘어$|^넘겨$/i, 
+                keywords: ["넘어", "넘겨", "넘어지게"],
+                responses: [
+                    "잠시만 기다려주세요...\n\n_> 명령 실행됨\n\n```\ncat > home/choimini/kick.py\n```\n\nConsole :  ★ kick.py 생성됨\n\nkick.py has been successfully created. Now I will insert the code.\n\n_> 명령 실행됨\n\nConsole : ♣︎ 파일 수정됨\n\nNow, I'll kick 이류준.\n\n_> 명령 실행됨\n```\ncd home/choimini/\npython3 kick.py\n```\n\nConsole :\n```\n이류준 넘어뜨리기 시도중...\n...\n오히려 내가 넘어짐 💀\n```\n😭"
                 ] 
             },
         ];
@@ -1194,7 +1218,7 @@
             return { thought, response, timeMs };
         }
 
-        function typeWriterEffect(element, text, speed = 25) {
+        function typeWriterEffect(element, text, speed = 8) {
             return new Promise(resolve => {
                 if (!element) return resolve();
                 element.classList.add('typing-cursor');
@@ -1283,7 +1307,32 @@
             if (thoughtEl) thoughtEl.textContent = thought;
             
             if (msgEl) {
-                await typeWriterEffect(msgEl, response, 30);
+                // 이미지 지연 로딩 마커 처리: 텍스트 먼저 표시 → 8초 후 그림 추가
+                if (response.includes('[[IMAGE_DELAY]]')) {
+                    const parts = response.split('[[IMAGE_DELAY]]');
+                    const textPart = parts[0];
+                    const imagePart = parts[1];
+
+                    await typeWriterEffect(msgEl, textPart, 10);
+
+                    // 8초 대기 후 그림 로드
+                    await new Promise(r => setTimeout(r, 8000));
+
+                    const currentHtml = msgEl.innerHTML;
+                    msgEl.innerHTML = currentHtml + renderMarkdown(imagePart);
+                    
+                    const chatContainer = document.getElementById('chat-container');
+                    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                } else if (response.includes('[[RELOAD_PAGE]]')) {
+                    // 새 채팅 요청: 텍스트 표시 후 페이지 새로고침
+                    const textPart = response.replace('[[RELOAD_PAGE]]', '');
+                    await typeWriterEffect(msgEl, textPart, 10);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1200);
+                } else {
+                    await typeWriterEffect(msgEl, response, 10);
+                }
                 
                 // 확장앱 요청: 자동 다운로드
                 if (query.match(/확장앱|^확장$|expansion/i)) {
@@ -1298,6 +1347,8 @@
                         openWebsite('https://hacking-account.enn.kr');
                     }, 800);
                 }
+
+                // 넘어 요청: kick.py 실행 시뮬레이션 (별도 처리는 응답 자체에 포함됨)
             }
             
             if (toolbarEl) toolbarEl.classList.remove('disabled');

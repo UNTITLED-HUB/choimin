@@ -906,7 +906,9 @@
         /* --- 끝말잇기 게임 상태 --- */
         let wordChainGame = {
             active: false,
-            wordsData: null,       // { always: [...], attack: {초성: [...]}, normal: {초성: [...]} }
+            awaitingRestart: false, // "한판 더?" 응답 대기 상태
+            wordsData: null,        // { always: [...], attack: {초성: [...]}, normal: {초성: [...]} }
+            allWordsSet: null,      // 빠른 조회용 전체 단어 Set
             usedWords: new Set(),
             lastWord: ""
         };
@@ -1296,52 +1298,37 @@
             const toolbarEl = botWrapper.querySelector('.action-toolbar');
             const cleanText = query.trim();
 
+            // "한판 더?" 질문 뒤 재시작 응답 처리 (게임이 방금 끝난 대기 상태)
+            if (wordChainGame.awaitingRestart) {
+                const isYes = /^(ㅇㅇ|응|어|네|넹|더|다시|ㄱㄱ|콜|좋아|하자|go|ok)$/i.test(cleanText);
+                const isNo = /^(아니|ㄴㄴ|싫어|안해|안함|no|그만)$/i.test(cleanText);
+
+                if (isYes) {
+                    wordChainGame.awaitingRestart = false;
+                    await startWordChainGame(msgEl, thoughtEl, toolbarEl, true);
+                    return;
+                }
+                if (isNo) {
+                    wordChainGame.awaitingRestart = false;
+                    thoughtEl.textContent = `The user declined a rematch. Ending gracefully.`;
+                    await typeWriterEffect(msgEl, "ㅇㅋ 알겠음 👋", 10);
+                    if (toolbarEl) toolbarEl.classList.remove('disabled');
+                    return;
+                }
+                // 애매한 응답이면 재시작 대기 해제하고 일반 대화로 넘김
+                wordChainGame.awaitingRestart = false;
+            }
+
             // 게임이 아직 시작 안 된 상태에서 "끝말잇기" 트리거
             if (!wordChainGame.active && /^끝말잇기$/i.test(cleanText)) {
-                thoughtEl.textContent = `The user wants to play a Korean word chain game ('끝말잇기'). I need to load the word dataset first before starting.`;
-
-                const introText = "ㅇㅋ 일단 알겠음 ㅇㅇ\n\n- 잠시만 기다려주세요.";
-
-                const step1 = "_> 명령 실행함\n```\ncurl -s https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json\n```";
-                const step2 = "Console: Content extraction successful.";
-                const step3 = "Loading was successful. Now, we will prepare for the word chain game.";
-                const step4 = "...Now, I will select a starting word from the extracted text. Since I am a nice ai assistant, I won't make the first word a one-shot word. 😏";
-
-                // 사고과정에 순차적으로 명령 로그 재생
-                let thoughtSoFar = thoughtEl.textContent;
-                const blocks = [step1, step2, step3, step4];
-                for (const block of blocks) {
-                    thoughtSoFar += "\n\n" + block;
-                    thoughtEl.textContent = thoughtSoFar;
-                    const chatContainer = document.getElementById('chat-container');
-                    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
-                    const isCommandStep = block.includes('_> 명령') || block.includes('```');
-                    const delay = isCommandStep ? (2000 + Math.random() * 3000) : (500 + Math.random() * 800);
-                    await new Promise(r => setTimeout(r, delay));
-                }
-
-                // 실제 데이터 로드 (fetch, 다운로드가 아니라 바로 사용)
-                await typeWriterEffect(msgEl, introText, 10);
-                await loadWordChainData();
-
-                const startWord = pickStartingWord();
-                wordChainGame.active = true;
-                wordChainGame.usedWords = new Set([startWord]);
-                wordChainGame.lastWord = startWord;
-
-                const finalMsg = `끝말잇기 API 로드를 완료했어요!\n끝말잇기를 종료하려면 "끝말잇기 끝"이라고 해주세요.\n기권하시고 싶다면 "gg"!\n저부터 시작합니다!  '${startWord}'`;
-                await new Promise(r => setTimeout(r, 300));
-                const currentHtml = msgEl.innerHTML;
-                msgEl.innerHTML = currentHtml + '<br><br>';
-                await typeWriterEffect(msgEl, finalMsg, 10);
-
-                if (toolbarEl) toolbarEl.classList.remove('disabled');
+                await startWordChainGame(msgEl, thoughtEl, toolbarEl, false);
                 return;
             }
 
             // 게임 진행 중: 종료 명령
             if (/^끝말잇기\s*끝$/i.test(cleanText)) {
                 wordChainGame.active = false;
+                wordChainGame.awaitingRestart = false;
                 thoughtEl.textContent = `The user wants to end the word chain game.`;
                 await typeWriterEffect(msgEl, "끝말잇기 종료! 재밌었음 ㅂㅂ 👋", 10);
                 if (toolbarEl) toolbarEl.classList.remove('disabled');
@@ -1351,8 +1338,18 @@
             // 게임 진행 중: 기권(gg)
             if (/^gg$/i.test(cleanText)) {
                 wordChainGame.active = false;
-                thoughtEl.textContent = `The user surrendered ('gg'). Ending the game with a playful response.`;
+                thoughtEl.textContent = `The user surrendered ('gg'). Ending the game with a playful response and offering a rematch.`;
                 await typeWriterEffect(msgEl, "ezzzzz\n한판 더?", 10);
+                wordChainGame.awaitingRestart = true;
+                if (toolbarEl) toolbarEl.classList.remove('disabled');
+                return;
+            }
+
+            // 게임 진행 중이지만 순수 한글 단어가 아닌 입력(잡담, 특수문자 등)은
+            // 게임을 끊지 않고 자연스럽게 흐름 안내만 해준다 (모든 입력을 반사시키지 않기 위함)
+            if (!/^[가-힣]+$/.test(cleanText)) {
+                thoughtEl.textContent = `The user said '${cleanText}', which doesn't look like a word chain move. I'll gently remind them of the current word instead of penalizing.`;
+                await typeWriterEffect(msgEl, `지금 끝말잇기 중이에요! '${wordChainGame.lastWord}' 다음 단어 입력해주세요 (그만하려면 "끝말잇기 끝")`, 10);
                 if (toolbarEl) toolbarEl.classList.remove('disabled');
                 return;
             }
@@ -1375,15 +1372,15 @@
             // 유효한 단어: 사용 처리
             wordChainGame.usedWords.add(cleanText);
             wordChainGame.lastWord = cleanText;
-            const userMoveText = `${wordChainGame.lastWord}`;
 
             // 봇의 다음 단어 탐색
             const botWord = findNextWord(cleanText);
 
             if (!botWord) {
-                // 봇이 이어갈 단어가 없음 -> 봇 패배 처리(반사 규칙에 따라 유저 승리 처럼 처리)
+                // 봇이 이어갈 단어가 없음 -> 봇 패배 처리, 한판 더 제안
                 wordChainGame.active = false;
                 await typeWriterEffect(msgEl, `${cleanText} ~> ...\n\n으악 못 잇겠음 내가 짐 🏳️\n한판 더?`, 10);
+                wordChainGame.awaitingRestart = true;
                 if (toolbarEl) toolbarEl.classList.remove('disabled');
                 return;
             }
@@ -1393,6 +1390,60 @@
 
             const responseText = `${cleanText} ~> ${botWord}`;
             await typeWriterEffect(msgEl, responseText, 10);
+            if (toolbarEl) toolbarEl.classList.remove('disabled');
+        }
+
+        // 게임 시작(최초 시작 또는 한판 더 재시작) 공통 처리
+        async function startWordChainGame(msgEl, thoughtEl, toolbarEl, isRestart) {
+            thoughtEl.textContent = isRestart
+                ? `The user wants a rematch. Restarting the word chain game with a fresh word.`
+                : `The user wants to play a Korean word chain game ('끝말잇기'). I need to load the word dataset first before starting.`;
+
+            if (!isRestart) {
+                const introText = "ㅇㅋ 일단 알겠음 ㅇㅇ\n\n- 잠시만 기다려주세요.";
+
+                const step1 = "_> 명령 실행함\n```\ncurl -s https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json\n```";
+                const step2 = "Console: Content extraction successful.";
+                const step3 = "Loading was successful. Now, we will prepare for the word chain game.";
+                const step4 = "...Now, I will select a starting word from the extracted text. Since I am a nice ai assistant, I won't make the first word a one-shot word. 😏";
+
+                let thoughtSoFar = thoughtEl.textContent;
+                const blocks = [step1, step2, step3, step4];
+                for (const block of blocks) {
+                    thoughtSoFar += "\n\n" + block;
+                    thoughtEl.textContent = thoughtSoFar;
+                    const chatContainer = document.getElementById('chat-container');
+                    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                    const isCommandStep = block.includes('_> 명령') || block.includes('```');
+                    const delay = isCommandStep ? (2000 + Math.random() * 3000) : (500 + Math.random() * 800);
+                    await new Promise(r => setTimeout(r, delay));
+                }
+
+                await typeWriterEffect(msgEl, introText, 10);
+                await loadWordChainData();
+            } else {
+                await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
+            }
+
+            const startWord = pickStartingWord();
+            wordChainGame.active = true;
+            wordChainGame.awaitingRestart = false;
+            wordChainGame.usedWords = new Set([startWord]);
+            wordChainGame.lastWord = startWord;
+
+            const finalMsg = isRestart
+                ? `좋음 한판 더 가자 🔥\n제가 먼저 시작합니다!  '${startWord}'`
+                : `끝말잇기 API 로드를 완료했어요!\n끝말잇기를 종료하려면 "끝말잇기 끝"이라고 해주세요.\n기권하시고 싶다면 "gg"!\n저부터 시작합니다!  '${startWord}'`;
+
+            if (!isRestart) {
+                await new Promise(r => setTimeout(r, 300));
+                const currentHtml = msgEl.innerHTML;
+                msgEl.innerHTML = currentHtml + '<br><br>';
+                await typeWriterEffect(msgEl, finalMsg, 10);
+            } else {
+                await typeWriterEffect(msgEl, finalMsg, 10);
+            }
+
             if (toolbarEl) toolbarEl.classList.remove('disabled');
         }
 
@@ -1451,7 +1502,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // 끝말잇기 게임이 진행 중이거나, 지금 시작하려는 경우 전용 핸들러로 분기
-            if (wordChainGame.active || /^끝말잇기$/i.test(query)) {
+            if (wordChainGame.active || wordChainGame.awaitingRestart || /^끝말잇기$/i.test(query)) {
                 await processWordChainTurn(botWrapper, query, currentMsgId, currentThoughtId);
             } else {
                 await processBotOutput(botWrapper, query, currentMsgId, currentThoughtId);
@@ -1473,6 +1524,7 @@
             lastUserQuery = "";
             repeatCount = 0;
             wordChainGame.active = false;
+            wordChainGame.awaitingRestart = false;
             wordChainGame.usedWords = new Set();
             wordChainGame.lastWord = "";
             showToast('대화가 초기화되었습니다 🧹');
@@ -1675,6 +1727,16 @@
                 const res = await fetch('https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json');
                 const data = await res.json();
                 wordChainGame.wordsData = data;
+
+                // 빠른 조회를 위한 전체 단어 Set 사전 구축 (O(1) 존재 검사)
+                const allWordsSet = new Set();
+                (data.always || []).forEach(w => allWordsSet.add(w));
+                const normalDict = data.normal || {};
+                for (const key in normalDict) normalDict[key].forEach(w => allWordsSet.add(w));
+                const attackDict = data.attack || {};
+                for (const key in attackDict) attackDict[key].forEach(w => allWordsSet.add(w));
+                wordChainGame.allWordsSet = allWordsSet;
+
                 return data;
             } catch (e) {
                 console.error('단어 데이터 로드 실패:', e);
@@ -1702,6 +1764,7 @@
             const startLetters = getCandidateStartLetters(tail);
 
             const alwaysSet = new Set((data.always || []).map(w => w));
+            const alwaysStartLetters = new Set((data.always || []).map(w => w[0]));
             const attackDict = data.attack || {};
             const normalDict = data.normal || {};
 
@@ -1730,11 +1793,12 @@
             normalCandidates = filterValid(normalCandidates);
             attackCandidates = filterValid(attackCandidates);
 
-            // normal 단어 중, 그 단어의 마지막 글자로 이어질 다음 단어가 실제로 존재하는 것만 우선 채택
-            // (내가 막힘단어를 내면 안 되므로 최대한 회피, 단 데이터가 부족하면 그냥 채택)
+            // 1순위: normal 단어 중, 그 단어의 끝글자가 always로 이어지지 않고
+            //        실제로 다음 단어가 존재하는 완전히 안전한 단어
             const safeNormal = normalCandidates.filter(w => {
                 const nextTail = w[w.length - 1];
                 const nextStarts = getCandidateStartLetters(nextTail);
+                if (nextStarts.some(sl => alwaysStartLetters.has(sl))) return false;
                 return nextStarts.some(sl => (normalDict[sl] && normalDict[sl].length > 0) || (attackDict[sl] && attackDict[sl].length > 0));
             });
 
@@ -1750,7 +1814,7 @@
             return null; // 이어갈 단어 없음 (봇이 막힘)
         }
 
-        // 첫 시작 단어 선택: 한방단어(always)로 이어지지 않는 안전한 일반 단어
+        // 첫 시작 단어 선택: 한방단어(always)로 절대 이어지지 않는 안전한 일반 단어
         function pickStartingWord() {
             const data = wordChainGame.wordsData;
             if (!data) return "사랑";
@@ -1764,15 +1828,18 @@
                 allNormalWords.push(...normalDict[key]);
             }
 
-            // 마지막 글자가 always(한방단어) 시작 글자와 겹치지 않는 안전한 단어 우선 선택
+            // 시작 단어의 끝 글자로 이어질 수 있는 모든 후보 시작 글자(두음법칙 포함) 중
+            // 하나라도 always(한방단어) 목록에 걸리면 그 단어는 제외
             const alwaysStartLetters = new Set((data.always || []).map(w => w[0]));
 
             const safeWords = allNormalWords.filter(w => {
                 if (!w || w.length < 2) return false;
                 if (alwaysSet.has(w)) return false;
                 const tail = w[w.length - 1];
-                if (alwaysStartLetters.has(tail)) return false;
                 const nextStarts = getCandidateStartLetters(tail);
+                // 두음법칙으로 확장된 시작 글자 중 하나라도 always와 겹치면 위험 단어로 배제
+                if (nextStarts.some(sl => alwaysStartLetters.has(sl))) return false;
+                // 실제로 이어갈 수 있는 일반 단어가 존재해야 함
                 return nextStarts.some(sl => (normalDict[sl] && normalDict[sl].length > 0) || (attackDict[sl] && attackDict[sl].length > 0));
             });
 
@@ -1786,6 +1853,8 @@
             const data = wordChainGame.wordsData;
             if (!data) return { valid: false, reason: 'no_data' };
 
+            // 순수 한글 단어인지 확인 (숫자/특수문자/공백 섞인 잡담은 게임 대상에서 제외)
+            if (!/^[가-힣]+$/.test(word)) return { valid: false, reason: 'not_korean' };
             if (word.length < 2) return { valid: false, reason: 'too_short' };
             if (wordChainGame.usedWords.has(word)) return { valid: false, reason: 'duplicate' };
 
@@ -1793,22 +1862,8 @@
             const head = word[0];
             if (!isValidChainLetter(prevTail, head)) return { valid: false, reason: 'wrong_start' };
 
-            // 사전에 존재하는 단어인지 확인 (always, normal, attack 어디든)
-            const alwaysSet = new Set((data.always || []).map(w => w));
-            const normalDict = data.normal || {};
-            const attackDict = data.attack || {};
-
-            let exists = alwaysSet.has(word);
-            if (!exists) {
-                for (const key in normalDict) {
-                    if (normalDict[key].includes(word)) { exists = true; break; }
-                }
-            }
-            if (!exists) {
-                for (const key in attackDict) {
-                    if (attackDict[key].includes(word)) { exists = true; break; }
-                }
-            }
+            // 사전에 존재하는 단어인지 확인 (Set 기반 O(1) 조회)
+            const exists = wordChainGame.allWordsSet && wordChainGame.allWordsSet.has(word);
             if (!exists) return { valid: false, reason: 'not_in_dict' };
 
             return { valid: true, reason: 'ok' };

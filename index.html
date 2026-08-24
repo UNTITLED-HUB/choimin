@@ -938,6 +938,7 @@
             { 
                 regex: /captcha|jCAPTCHA|캡챠|로봇이|윤주성/i, 
                 keywords: ["captcha", "jCAPTCHA", "캡챠", "로봇이", "윤주성이"],
+                priority: -1, // "윤주성"은 다른 특수 명령(넘어, 류준 등)과 자주 함께 언급되므로 우선순위를 낮춤
                 responses: [
                     "# jCAPTCHA란 무엇인가요? 🤨\njCPATCHA는 윤주성을 막기 위해 만들어진 캡챠 서비스 입니다. 🤖\n서버 없이 클라이언트에서 작동하는 방식이라, 실제 봇 유저들은 차단하지 못할 수 있지만 🤔\n윤주성은 그런거 못하니 상관없습니다. 😏"
                 ] 
@@ -1091,6 +1092,7 @@
             { 
                 regex: /넘어지게|넘어져|넘어뜨|넘어트|^넘어$|^넘겨$/i, 
                 keywords: ["넘어", "넘겨", "넘어지게"],
+                priority: 1, // "넘어뜨리다" 등 구체적 동사 액션은 "류준" 같은 단순 대상 언급보다 우선
                 responses: [
                     "[[COMMAND_SIM]]잠시만 기다려주세요...\n\n_> 명령 실행됨\n\n```\ncat > home/choimini/kick.py\n```\n\nConsole :  ★ kick.py 생성됨\n\nkick.py has been successfully created. Now I will insert the code.\n\n_> 명령 실행됨\n\nConsole : ♣︎ 파일 수정됨\n\nNow, I'll kick 이류준.\n\n_> 명령 실행됨\n```\ncd home/choimini/\npython3 kick.py\n```\n\nConsole :\n```\n이류준 넘어뜨리기 시도중...\n...\n오히려 내가 넘어짐 💀\n```\n😭"
                 ] 
@@ -1125,12 +1127,14 @@
             return matrix[b.length][a.length];
         }
 
-        // 키워드 길이에 따른 허용 오차(edit distance). 응답 항목이 적어 관대하게 설정
+        // 키워드 길이에 따른 허용 오차(edit distance).
+        // 짧은 키워드일수록 우연히 일치할 확률이 기하급수적으로 커지므로(오탐 위험),
+        // 오타 허용 폭을 보수적으로 설정한다.
         function maxAllowedDistance(kwLen) {
-            if (kwLen <= 1) return 0;  // 1글자는 정확히만
-            if (kwLen <= 3) return 1;  // 2~3글자는 오타 1글자까지 허용
-            if (kwLen <= 6) return 2;  // 4~6글자는 오타 2글자까지 허용
-            return 3;                   // 7글자 이상은 오타 3글자까지 허용
+            if (kwLen <= 2) return -1;  // 1~2글자는 유사도 매칭 비활성화 (완전 포함 일치만 인정)
+            if (kwLen <= 3) return 0;   // 3글자는 오타 허용 안 함 (완전 포함 일치만)
+            if (kwLen <= 6) return 1;   // 4~6글자는 오타 1글자까지 허용
+            return 2;                    // 7글자 이상은 오타 2글자까지 허용
         }
 
         // 텍스트 안에서 키워드와 가장 유사한 부분을 찾아 0~1 유사도 점수 반환
@@ -1138,11 +1142,17 @@
             const kw = keyword.toLowerCase();
             const t = text.toLowerCase();
 
+            // 1글자 키워드("?" 등)는 부분 포함만으로 매칭하면 아무 문장에나 걸리므로
+            // 전체 입력이 그 키워드와 정확히 같을 때만 인정한다.
+            if (kw.length <= 1) {
+                return t === kw ? 1.0 : 0;
+            }
+
             // 키워드가 통째로 포함되면 만점
             if (t.includes(kw)) return 1.0;
 
             const allowedDist = maxAllowedDistance(kw.length);
-            if (allowedDist < 0) return 0;
+            if (allowedDist <= 0) return 0;
 
             const winLen = kw.length;
             let minDist = Infinity;
@@ -1163,7 +1173,7 @@
         }
 
         // intentDB 전체에서 가장 유사한 항목 탐색 (임계값 이상만 반환)
-        function findClosestIntent(text, threshold = 0.45) {
+        function findClosestIntent(text, threshold = 0.40) {
             let bestMatch = null;
             let bestScore = 0;
 
@@ -1188,8 +1198,8 @@
             const cleanText = text.trim().normalize('NFC');
             const timeMs = (Math.random() * 1.5 + 0.8).toFixed(1);
 
-            // 새로운 사고 과정 포맷
-            const thought = `The user said '${cleanText}'. It's mean analyzing the intent...\n\nProcessing: ${timeMs}s thinking...`;
+            // 새로운 사고 과정 포맷 (마크다운 헤더 사용)
+            const thought = `# 의도 분석\n사용자 입력: **'${cleanText}'**\n\n메시지의 의도를 파악하고 가장 적절한 응답을 고른다.\n\n_> Processing: ${timeMs}s`;
 
             let response = "";
 
@@ -1209,15 +1219,31 @@
                 repeatCount = 0;
             }
 
+            // 여러 항목이 동시에 매칭될 수 있는 문장(예: "윤주성이 이류준 넘어뜨릴수 있다는데")에서
+            // 배열 순서상 먼저 오는 항목이 무조건 이기는 문제를 막기 위해,
+            // 매칭되는 모든 항목을 모은 뒤 1) priority가 높은 것, 2) 동점이면 실제 일치한
+            // 부분 문자열이 더 긴(더 구체적인) 것을 채택한다. priority 기본값은 0.
+            let bestIntentMatch = null;
+            let bestPriority = -Infinity;
+            let bestMatchLen = 0;
             for (let i = 0; i < intentDB.length; i++) {
-                if (intentDB[i].regex.test(cleanText)) {
-                    response = getRandomElement(intentDB[i].responses);
-                    return { thought, response, timeMs };
+                const m = cleanText.match(intentDB[i].regex);
+                if (!m) continue;
+                const p = intentDB[i].priority || 0;
+                const len = m[0].length;
+                if (p > bestPriority || (p === bestPriority && len > bestMatchLen)) {
+                    bestPriority = p;
+                    bestMatchLen = len;
+                    bestIntentMatch = intentDB[i];
                 }
+            }
+            if (bestIntentMatch) {
+                response = getRandomElement(bestIntentMatch.responses);
+                return { thought, response, timeMs };
             }
 
             // 정규식 매칭 실패 → 유사도 점수 기반 fallback 탐색 (오타/유사 단어 대응)
-            const closestIntent = findClosestIntent(cleanText, 0.45);
+            const closestIntent = findClosestIntent(cleanText, 0.40);
             if (closestIntent) {
                 response = getRandomElement(closestIntent.responses);
                 return { thought, response, timeMs };
@@ -1226,6 +1252,26 @@
             // 등록되지 않은 응답 → 최민 응답
             response = "최민?";
             return { thought, response, timeMs };
+        }
+
+        // 사고과정(thought-box) 전용 렌더 헬퍼
+        // - 원본 누적 텍스트는 dataset.raw에 보관 (계속 이어붙이기 위함)
+        // - 화면에는 공백 정리 + renderMarkdown()을 거친 결과를 innerHTML로 표시
+        function setThoughtText(thoughtEl, rawText) {
+            if (!thoughtEl) return;
+            thoughtEl.dataset.raw = rawText;
+            const cleaned = rawText
+                .replace(/[ \t]{2,}/g, ' ')       // 연속된 공백/탭을 하나로
+                .replace(/\n{3,}/g, '\n\n')        // 3줄 이상 빈 줄을 2줄로
+                .replace(/[ \t]+\n/g, '\n');       // 줄 끝 트레일링 공백 제거
+            thoughtEl.innerHTML = renderMarkdown(cleaned);
+        }
+
+        function appendThoughtText(thoughtEl, addedText) {
+            if (!thoughtEl) return;
+            const prev = thoughtEl.dataset.raw || '';
+            const next = prev ? (prev + '\n\n' + addedText) : addedText;
+            setThoughtText(thoughtEl, next);
         }
 
         function typeWriterEffect(element, text, speed = 8) {
@@ -1270,12 +1316,9 @@
             const finalBlock = blocks[blocks.length - 1];
             const thoughtBlocks = blocks.slice(0, -1);
 
-            let thoughtSoFar = thoughtEl.textContent || "";
-
             for (const block of thoughtBlocks) {
                 const isCommandStep = block.includes('_> 명령 실행됨') || block.includes('```');
-                thoughtSoFar += (thoughtSoFar ? "\n\n" : "") + block;
-                thoughtEl.textContent = thoughtSoFar;
+                appendThoughtText(thoughtEl, block);
 
                 const chatContainer = document.getElementById('chat-container');
                 if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1312,7 +1355,7 @@
                 }
                 if (isNo) {
                     wordChainGame.awaitingRestart = false;
-                    thoughtEl.textContent = `The user declined a rematch. Ending gracefully.`;
+                    setThoughtText(thoughtEl, `# 상황 판단\n사용자가 재대결을 거절함(**${cleanText}**). 게임을 깔끔하게 마무리하고 대기 상태를 해제한다.`);
                     await typeWriterEffect(msgEl, "ㅇㅋ 알겠음 👋", 10);
                     if (toolbarEl) toolbarEl.classList.remove('disabled');
                     return;
@@ -1331,7 +1374,7 @@
             if (/^끝말잇기\s*끝$/i.test(cleanText)) {
                 wordChainGame.active = false;
                 wordChainGame.awaitingRestart = false;
-                thoughtEl.textContent = `The user wants to end the word chain game.`;
+                setThoughtText(thoughtEl, `# 게임 종료 요청\n사용자가 **"끝말잇기 끝"**을 입력함. 게임 상태(active)를 false로 전환하고 정중히 마무리한다.`);
                 await typeWriterEffect(msgEl, "끝말잇기 종료! 재밌었음 ㅂㅂ 👋", 10);
                 if (toolbarEl) toolbarEl.classList.remove('disabled');
                 return;
@@ -1340,7 +1383,7 @@
             // 게임 진행 중: 기권(gg)
             if (/^gg$/i.test(cleanText)) {
                 wordChainGame.active = false;
-                thoughtEl.textContent = `The user surrendered ('gg'). Ending the game with a playful response and offering a rematch.`;
+                setThoughtText(thoughtEl, `# 기권 감지\n사용자가 **'gg'**를 입력함 → 기권 의사로 판단.\n\n게임을 종료하고 장난스러운 어조로 재대결을 제안한다.`);
                 await typeWriterEffect(msgEl, "ezzzzz\n한판 더?", 10);
                 wordChainGame.awaitingRestart = true;
                 if (toolbarEl) toolbarEl.classList.remove('disabled');
@@ -1350,7 +1393,7 @@
             // 게임 진행 중이지만 순수 한글 단어가 아닌 입력(잡담, 특수문자 등)은
             // 게임을 끊지 않고 자연스럽게 흐름 안내만 해준다 (모든 입력을 반사시키지 않기 위함)
             if (!/^[가-힣]+$/.test(cleanText)) {
-                thoughtEl.textContent = `The user said '${cleanText}', which doesn't look like a word chain move. I'll gently remind them of the current word instead of penalizing.`;
+                setThoughtText(thoughtEl, `# 입력 형식 확인\n입력값 **'${cleanText}'**는 순수 한글 단어 패턴(가-힣)에 맞지 않음.\n\n게임 중 잡담이나 특수문자로 판단되어, 반사 처리 대신 현재 진행 상황만 안내한다.`);
                 await typeWriterEffect(msgEl, `지금 끝말잇기 중이에요! '${wordChainGame.lastWord}' 다음 단어 입력해주세요 (그만하려면 "끝말잇기 끝")`, 10);
                 if (toolbarEl) toolbarEl.classList.remove('disabled');
                 return;
@@ -1358,7 +1401,7 @@
 
             // 게임 진행 중: 사용자가 단어 입력
             const timeMs = (Math.random() * 1.0 + 0.5).toFixed(1);
-            thoughtEl.textContent = `The user said '${cleanText}'. Checking if this is a valid word chain move from '${wordChainGame.lastWord}'...\n\nProcessing: ${timeMs}s thinking...`;
+            setThoughtText(thoughtEl, `# 단어 검증 시작\n입력: **'${cleanText}'**\n직전 단어: **'${wordChainGame.lastWord}'**\n\n- 순수 한글 여부 확인\n- 시작 글자 일치 여부 확인 (두음법칙 포함)\n- 중복 사용 여부 확인\n- 사전(kr_words.json) 등재 여부 확인\n\n_> Processing: ${timeMs}s`);
             await new Promise(r => setTimeout(r, parseFloat(timeMs) * 1000));
 
             const validation = validateUserWord(cleanText);
@@ -1373,7 +1416,7 @@
                     always_word: '무조건 한방단어(always)임',
                     no_data: '단어 데이터 로드 안 됨'
                 }[validation.reason] || validation.reason;
-                thoughtEl.textContent += `\n\nValidation failed: ${reasonLabel}`;
+                appendThoughtText(thoughtEl, `# 검증 실패\n**사유:** ${reasonLabel}\n\n사용자에게 반사 규칙을 안내하고, 게임 상태(lastWord)는 그대로 유지해 재도전할 수 있게 한다.`);
 
                 const lastChar = wordChainGame.lastWord[wordChainGame.lastWord.length - 1];
                 const failMsg = `반사! ${lastChar}로 시작하는 단어를 다시 입력하세요 ㅋ`;
@@ -1408,23 +1451,21 @@
 
         // 게임 시작(최초 시작 또는 한판 더 재시작) 공통 처리
         async function startWordChainGame(msgEl, thoughtEl, toolbarEl, isRestart) {
-            thoughtEl.textContent = isRestart
-                ? `The user wants a rematch. Restarting the word chain game with a fresh word.`
-                : `The user wants to play a Korean word chain game ('끝말잇기'). I need to load the word dataset first before starting.`;
+            setThoughtText(thoughtEl, isRestart
+                ? `# 재대결 요청\n사용자가 한판 더를 원함. 기존 단어 데이터는 이미 메모리에 있으므로 재요청 없이 새 시작 단어만 뽑는다.`
+                : `# 끝말잇기 시작 요청\n사용자가 끝말잇기를 하고 싶어함.\n\n먼저 단어 데이터셋을 불러와야 게임을 진행할 수 있다.`);
 
             if (!isRestart) {
                 const introText = "ㅇㅋ 일단 알겠음 ㅇㅇ\n\n- 잠시만 기다려주세요.";
 
-                const step1 = "_> 명령 실행함\n```\ncurl -s https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json\n```";
-                const step2 = "Console: Content extraction successful.";
+                const step1 = "## 명령 실행\n_> 명령 실행함\n```\ncurl -s https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json\n```";
+                const step2 = "**Console:** Content extraction successful.";
                 const step3 = "Loading was successful. Now, we will prepare for the word chain game.";
                 const step4 = "...Now, I will select a starting word from the extracted text. Since I am a nice ai assistant, I won't make the first word a one-shot word. 😏";
 
-                let thoughtSoFar = thoughtEl.textContent;
                 const blocks = [step1, step2, step3, step4];
                 for (const block of blocks) {
-                    thoughtSoFar += "\n\n" + block;
-                    thoughtEl.textContent = thoughtSoFar;
+                    appendThoughtText(thoughtEl, block);
                     const chatContainer = document.getElementById('chat-container');
                     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
                     const isCommandStep = block.includes('_> 명령') || block.includes('```');
@@ -1553,7 +1594,7 @@
             if (msgEl) msgEl.textContent = "생각하는 중...";
             await new Promise(r => setTimeout(r, parseFloat(timeMs) * 1000));
 
-            if (thoughtEl) thoughtEl.textContent = thought;
+            if (thoughtEl) setThoughtText(thoughtEl, thought);
             
             if (msgEl) {
                 // 명령 실행 시뮬레이션 마커: Claude 스타일 사고과정으로 순차 재생
@@ -1875,8 +1916,7 @@
         }
 
         // 사용자가 입력한 단어가 유효한지 검증
-        // 데이터셋(kr_words.json)이 옛말/방언 위주로 좁아서, 표준어인데 사전에 없어
-        // 억울하게 반사당하는 걸 막기 위해 형식 규칙만 맞으면 관대하게 인정한다.
+        // 사용자가 입력한 단어가 유효한지 검증
         // 반환: { valid: bool, reason: string }
         function validateUserWord(word) {
             const data = wordChainGame.wordsData;
@@ -1891,8 +1931,13 @@
             const head = word[0];
             if (!isValidChainLetter(prevTail, head)) return { valid: false, reason: 'wrong_start' };
 
-            // always(한방단어)만 명시적으로 차단. 그 외에는 사전 등재 여부와 무관하게 인정
-            // (데이터셋이 좁아 표준어까지 반사시키는 문제를 막기 위함)
+            // 사전(always/normal/attack)에 실제로 등재된 단어인지 확인 (Set 기반 O(1) 조회)
+            // 입력은 processWordChainTurn에서 이미 NFC로 정규화되고, 사전 데이터도 로드 시
+            // NFC로 정규화해 저장하므로 정상적인 사전 등재 단어는 항상 정확히 매칭된다.
+            const exists = wordChainGame.allWordsSet && wordChainGame.allWordsSet.has(word);
+            if (!exists) return { valid: false, reason: 'not_in_dict' };
+
+            // always(한방단어)는 사전에는 있지만 게임 중 낼 수 없는 단어이므로 별도 차단
             const alwaysSet = new Set(data.always || []);
             if (alwaysSet.has(word)) return { valid: false, reason: 'always_word' };
 
@@ -1914,6 +1959,9 @@
                     <button onclick="copyCodeBlock('${blockId}')" style="position: absolute; top: 6px; right: 6px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.75rem;">📋 복사</button>
                 </div>`;
             });
+            
+            // 제목 (## 처리) - 작은 글씨로, # 보다 먼저 처리해야 함
+            html = html.replace(/^##\s+(.+)$/gm, '<span style="font-size: 1.05rem; font-weight: bold; color: var(--accent-color); display: block; margin: 0.4rem 0;">$1</span>');
             
             // 제목 (# 처리) - 큰 글씨로
             html = html.replace(/^#\s+(.+)$/gm, '<span style="font-size: 1.3rem; font-weight: bold; color: var(--accent-color); display: block; margin: 0.5rem 0;">$1</span>');

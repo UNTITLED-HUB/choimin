@@ -18,6 +18,11 @@
     5: [[8, 40, 14, 30]], // 금
   };
 
+  // 차단 시간대라도 이 코드를 입력하면 강제로 통과시키는 언락 코드.
+  // 입력창은 별도로 없고, 검사 중(차단 여부 판정 전)에 사용자가 이 문자열을 그대로
+  // 키보드로 타이핑하면(포커스된 입력 요소가 없어도 감지됨) 통과 처리됩니다.
+  const UNLOCK_CODE = "CODE_UNLOCK_SITE_0716";
+
   const TEXT = {
     checking_title: "사람인지 확인하는 중...",
     checking_sub: "이 사이트는 악의적인 사용자로부터 보호합니다. 확인 후 연결됩니다.",
@@ -49,6 +54,21 @@
     init() {
       this.injectStyles();
       this.render();
+      this._unlocked = false;
+      this._typedBuf = "";
+      // 검사 중(결과가 나오기 전)에 페이지 아무 곳에서나 UNLOCK_CODE를 그대로 타이핑하면
+      // 차단 시간대여도 강제로 통과시킵니다. 입력창 포커스가 필요 없는 전역 키 리스너 방식.
+      this._onKeydown = (e) => {
+        if (this._resolved || this._unlocked) return;
+        if (!e.key || e.key.length > 1) return; // 일반 문자만 누적 (Shift, Enter 등 제외)
+        this._typedBuf = (this._typedBuf + e.key).slice(-UNLOCK_CODE.length);
+        if (this._typedBuf === UNLOCK_CODE) {
+          this._unlocked = true;
+          if (this._timer) clearTimeout(this._timer);
+          this.showSuccess();
+        }
+      };
+      document.addEventListener("keydown", this._onKeydown);
       // 실제 클라우드플레어처럼, 잠깐의 "검사 중" 연출 후 결과를 표시합니다.
       const delay = this.opts.checkDelayMs != null ? this.opts.checkDelayMs : 1000 + Math.random() * 700;
       this._timer = setTimeout(() => this.runCheck(), delay);
@@ -114,6 +134,7 @@
     }
 
     runCheck() {
+      if (this._resolved) return; // 언락 코드로 이미 통과 처리된 경우 시간 판정을 건너뜀
       if (isBlockedNow()) {
         this.showBlocked();
       } else {
@@ -122,6 +143,8 @@
     }
 
     showBlocked() {
+      this._resolved = true;
+      document.removeEventListener("keydown", this._onKeydown);
       this.el.badge.innerHTML = "✗";
       this.el.badge.classList.add("error");
       this.el.title.textContent = TEXT.blocked_title;
@@ -131,6 +154,8 @@
     }
 
     showSuccess() {
+      this._resolved = true;
+      document.removeEventListener("keydown", this._onKeydown);
       this.el.badge.innerHTML = "✓";
       this.el.badge.classList.add("success");
       this.el.title.textContent = TEXT.success_title;
@@ -138,7 +163,12 @@
       const token = "jcaptchav2_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
       setTimeout(() => {
         window.jcaptchaV2OnSuccess &&
-          window.jcaptchaV2OnSuccess({ success: true, token: token, timestamp: Date.now() });
+          window.jcaptchaV2OnSuccess({
+            success: true,
+            token: token,
+            unlocked: this._unlocked === true,
+            timestamp: Date.now(),
+          });
       }, 500);
     }
   }

@@ -36,6 +36,7 @@
             color: var(--text-primary);
             line-height: 1.6;
             height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -586,18 +587,62 @@
 
 <style id="jcv2-gate-style">
   html.jcv2-locked body > *:not(#jcv2-gate){ display:none !important; }
-  #jcv2-gate{ position:fixed; inset:0; z-index:99999; background:#0b0f19;
-    display:flex; align-items:center; justify-content:center; }
+  #jcv2-gate{
+    position:fixed; inset:0; z-index:99999;
+    background:#ffffff; color:#1a1a1a;
+    display:flex; align-items:flex-start; justify-content:center;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:56px 16px calc(56px + env(safe-area-inset-bottom));
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Pretendard",sans-serif;
+  }
+  #jcv2-gate .jcv2-panel{ width:100%; max-width:600px; }
+  #jcv2-gate .jcv2-brand{ display:flex; align-items:center; gap:10px; margin-bottom:22px; }
+  #jcv2-gate .jcv2-icon{
+    width:34px; height:34px; flex-shrink:0; border-radius:8px;
+    background:#3b82f6; display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  #jcv2-gate .jcv2-domain{ font-size:1.6rem; font-weight:800; color:#111827; word-break:break-all; }
+  #jcv2-gate h1{ font-size:1.3rem; font-weight:800; margin:0 0 14px; color:#111827; }
+  #jcv2-gate .jcv2-desc{ font-size:0.95rem; line-height:1.6; color:#444d5e; margin:0 0 24px; }
+  #jcv2-gate .jcv2-widget-box{ display:flex; }
+  #jcv2-gate .jcv2-fallback{
+    display:none; margin-top:16px; padding:14px 16px; background:#fff7ed;
+    border:1px solid #fdba74; border-radius:8px; font-size:0.85rem; color:#7c2d12; line-height:1.6;
+  }
+  #jcv2-gate .jcv2-fallback.show{ display:block; }
+  #jcv2-gate .jcv2-fallback button{
+    margin-top:10px; padding:8px 14px; background:#ea580c; color:#fff; border:none;
+    border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;
+  }
+  @media (max-width:480px){
+    #jcv2-gate{ padding-top:40px; }
+    #jcv2-gate .jcv2-domain{ font-size:1.25rem; }
+  }
 </style>
 </head>
 <body>
 
     <!-- Cloudflare Turnstile 접속 게이트: 통과 전까지 페이지 콘텐츠를 가림 -->
     <div id="jcv2-gate">
-      <div class="cf-turnstile"
-           data-sitekey="0x4AAAAAAE6QOBCCaei05aqw"
-           data-theme="light"
-           data-callback="onCfTurnstileSuccess"></div>
+      <div class="jcv2-panel">
+        <div class="jcv2-brand">
+          <span class="jcv2-icon">🛡️</span>
+          <span class="jcv2-domain">untitled-hub.github.io/choimin</span>
+        </div>
+        <h1>보안 확인 수행 중</h1>
+        <p class="jcv2-desc">이 웹 사이트는 보안 서비스를 사용하여 악의적인 봇으로부터 보호합니다. 이 페이지는 웹 사이트에서 사용자가 봇이 아님을 확인하는 동안에만 표시됩니다.</p>
+        <div class="jcv2-widget-box">
+          <div class="cf-turnstile"
+               data-sitekey="0x4AAAAAAE6QOBCCaei05aqw"
+               data-theme="light"
+               data-callback="onCfTurnstileSuccess"></div>
+        </div>
+        <div class="jcv2-fallback" id="jcv2-fallback">
+          인증 위젯이 표시되지 않나요? 브라우저의 광고 차단기나 보안/트래킹 방지 기능이 Cloudflare 인증을 막고 있을 수 있습니다. 해당 기능을 잠시 끄거나 다른 브라우저에서 시도한 뒤 새로고침 해주세요.
+          <div><button onclick="location.reload()">새로고침</button></div>
+        </div>
+      </div>
     </div>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script>
@@ -606,8 +651,16 @@
         var gate = document.getElementById('jcv2-gate');
         if (gate) gate.remove();
       }
+      // 위젯이 일정 시간 안에 렌더링되지 않으면(광고 차단기 등으로 스크립트가 막힌 경우)
+      // 안내 문구와 새로고침 버튼을 보여준다.
+      setTimeout(function () {
+        var box = document.querySelector('#jcv2-gate .jcv2-widget-box');
+        var fallback = document.getElementById('jcv2-fallback');
+        if (box && fallback && !box.querySelector('iframe')) {
+          fallback.classList.add('show');
+        }
+      }, 6000);
     </script>
-
 
     <!-- 내비게이션 바 -->
     <header>
@@ -887,7 +940,7 @@
                         <div class="service-card" onclick="chooseAiVersion('old')">
                             <div class="service-info">
                                 <h3>구버전</h3>
-                                <p>이 사이트에 내장된 기존 최미나이 (끝말잇기, 반응형 대화 등)</p>
+                                <p>이 사이트에 내장된 기존 최미나이 (반응형 대화 등)</p>
                             </div>
                             <div class="service-arrow">&rarr;</div>
                         </div>
@@ -984,16 +1037,6 @@
         let isGenerating = false;
         let lastUserQuery = "";
         let repeatCount = 0;
-
-        /* --- 끝말잇기 게임 상태 --- */
-        let wordChainGame = {
-            active: false,
-            awaitingRestart: false, // "한판 더?" 응답 대기 상태
-            wordsData: null,        // { always: [...], attack: {초성: [...]}, normal: {초성: [...]} }
-            allWordsSet: null,      // 빠른 조회용 전체 단어 Set
-            usedWords: new Set(),
-            lastWord: ""
-        };
 
         const intentDB = [
             // 1. 최민
@@ -1416,173 +1459,6 @@
             await typeWriterEffect(msgEl, finalBlock, 10);
         }
 
-        /* ======================= 끝말잇기 턴 처리 ======================= */
-        async function processWordChainTurn(botWrapper, query, msgId, thoughtId) {
-            const msgEl = document.getElementById(msgId);
-            const thoughtEl = document.getElementById(thoughtId);
-            const toolbarEl = botWrapper.querySelector('.action-toolbar');
-            // NFC 정규화: 일부 환경(macOS 등)에서 한글이 자모 분해형(NFD)으로 입력되면
-            // 완성형 음절 비교(사전 조회, 두음법칙 등)가 전부 실패하므로 반드시 정규화한다.
-            const cleanText = query.trim().normalize('NFC');
-
-            // "한판 더?" 질문 뒤 재시작 응답 처리 (게임이 방금 끝난 대기 상태)
-            if (wordChainGame.awaitingRestart) {
-                const isYes = /^(ㅇㅇ|응|어|네|넹|더|다시|ㄱㄱ|콜|좋아|하자|go|ok)$/i.test(cleanText);
-                const isNo = /^(아니|ㄴㄴ|싫어|안해|안함|no|그만)$/i.test(cleanText);
-
-                if (isYes) {
-                    wordChainGame.awaitingRestart = false;
-                    await startWordChainGame(msgEl, thoughtEl, toolbarEl, true);
-                    return;
-                }
-                if (isNo) {
-                    wordChainGame.awaitingRestart = false;
-                    setThoughtText(thoughtEl, `# 상황 판단\n사용자가 재대결을 거절함(**${cleanText}**). 게임을 깔끔하게 마무리하고 대기 상태를 해제한다.`);
-                    await typeWriterEffect(msgEl, "ㅇㅋ 알겠음 👋", 10);
-                    if (toolbarEl) toolbarEl.classList.remove('disabled');
-                    return;
-                }
-                // 애매한 응답이면 재시작 대기 해제하고 일반 대화로 넘김
-                wordChainGame.awaitingRestart = false;
-            }
-
-            // 게임이 아직 시작 안 된 상태에서 "끝말잇기" 트리거
-            if (!wordChainGame.active && /^끝말잇기$/i.test(cleanText)) {
-                await startWordChainGame(msgEl, thoughtEl, toolbarEl, false);
-                return;
-            }
-
-            // 게임 진행 중: 종료 명령
-            if (/^끝말잇기\s*끝$/i.test(cleanText)) {
-                wordChainGame.active = false;
-                wordChainGame.awaitingRestart = false;
-                setThoughtText(thoughtEl, `# 게임 종료 요청\n사용자가 **"끝말잇기 끝"**을 입력함. 게임 상태(active)를 false로 전환하고 정중히 마무리한다.`);
-                await typeWriterEffect(msgEl, "끝말잇기 종료! 재밌었음 ㅂㅂ 👋", 10);
-                if (toolbarEl) toolbarEl.classList.remove('disabled');
-                return;
-            }
-
-            // 게임 진행 중: 기권(gg)
-            if (/^gg$/i.test(cleanText)) {
-                wordChainGame.active = false;
-                setThoughtText(thoughtEl, `# 기권 감지\n사용자가 **'gg'**를 입력함 → 기권 의사로 판단.\n\n게임을 종료하고 장난스러운 어조로 재대결을 제안한다.`);
-                await typeWriterEffect(msgEl, "ezzzzz\n한판 더?", 10);
-                wordChainGame.awaitingRestart = true;
-                if (toolbarEl) toolbarEl.classList.remove('disabled');
-                return;
-            }
-
-            // 게임 진행 중이지만 순수 한글 단어가 아닌 입력(잡담, 특수문자 등)은
-            // 게임을 끊지 않고 자연스럽게 흐름 안내만 해준다 (모든 입력을 반사시키지 않기 위함)
-            if (!/^[가-힣]+$/.test(cleanText)) {
-                setThoughtText(thoughtEl, `# 입력 형식 확인\n입력값 **'${cleanText}'**는 순수 한글 단어 패턴(가-힣)에 맞지 않음.\n\n게임 중 잡담이나 특수문자로 판단되어, 반사 처리 대신 현재 진행 상황만 안내한다.`);
-                await typeWriterEffect(msgEl, `지금 끝말잇기 중이에요! '${wordChainGame.lastWord}' 다음 단어 입력해주세요 (그만하려면 "끝말잇기 끝")`, 10);
-                if (toolbarEl) toolbarEl.classList.remove('disabled');
-                return;
-            }
-
-            // 게임 진행 중: 사용자가 단어 입력
-            const timeMs = (Math.random() * 1.0 + 0.5).toFixed(1);
-            setThoughtText(thoughtEl, `# 단어 검증 시작\n입력: **'${cleanText}'**\n직전 단어: **'${wordChainGame.lastWord}'**\n\n- 순수 한글 여부 확인\n- 시작 글자 일치 여부 확인 (두음법칙 포함)\n- 중복 사용 여부 확인\n- 사전(kr_words.json) 등재 여부 확인\n\n_> Processing: ${timeMs}s`);
-            await new Promise(r => setTimeout(r, parseFloat(timeMs) * 1000));
-
-            const validation = validateUserWord(cleanText);
-
-            if (!validation.valid) {
-                // 디버깅용: 어떤 사유로 막혔는지 사고과정에 상세히 기록 (⛓️ 버튼으로 확인 가능)
-                const reasonLabel = {
-                    not_korean: '한글이 아닌 문자가 포함됨',
-                    too_short: '2글자 미만',
-                    duplicate: '이미 사용된 단어',
-                    wrong_start: `시작 글자 불일치 (이전 단어 끝: '${wordChainGame.lastWord[wordChainGame.lastWord.length-1]}', 입력 시작: '${cleanText[0]}')`,
-                    always_word: '무조건 한방단어(always)임',
-                    no_data: '단어 데이터 로드 안 됨'
-                }[validation.reason] || validation.reason;
-                appendThoughtText(thoughtEl, `# 검증 실패\n**사유:** ${reasonLabel}\n\n사용자에게 반사 규칙을 안내하고, 게임 상태(lastWord)는 그대로 유지해 재도전할 수 있게 한다.`);
-
-                const lastChar = wordChainGame.lastWord[wordChainGame.lastWord.length - 1];
-                const failMsg = `반사! ${lastChar}로 시작하는 단어를 다시 입력하세요 ㅋ`;
-                await typeWriterEffect(msgEl, failMsg, 10);
-                if (toolbarEl) toolbarEl.classList.remove('disabled');
-                return;
-            }
-
-            // 유효한 단어: 사용 처리
-            wordChainGame.usedWords.add(cleanText);
-            wordChainGame.lastWord = cleanText;
-
-            // 봇의 다음 단어 탐색
-            const botWord = findNextWord(cleanText);
-
-            if (!botWord) {
-                // 봇이 이어갈 단어가 없음 -> 봇 패배 처리, 한판 더 제안
-                wordChainGame.active = false;
-                await typeWriterEffect(msgEl, `${cleanText} ~> ...\n\n으악 못 잇겠음 내가 짐 🏳️\n한판 더?`, 10);
-                wordChainGame.awaitingRestart = true;
-                if (toolbarEl) toolbarEl.classList.remove('disabled');
-                return;
-            }
-
-            wordChainGame.usedWords.add(botWord);
-            wordChainGame.lastWord = botWord;
-
-            const responseText = `${cleanText} ~> ${botWord}`;
-            await typeWriterEffect(msgEl, responseText, 10);
-            if (toolbarEl) toolbarEl.classList.remove('disabled');
-        }
-
-        // 게임 시작(최초 시작 또는 한판 더 재시작) 공통 처리
-        async function startWordChainGame(msgEl, thoughtEl, toolbarEl, isRestart) {
-            setThoughtText(thoughtEl, isRestart
-                ? `# 재대결 요청\n사용자가 한판 더를 원함. 기존 단어 데이터는 이미 메모리에 있으므로 재요청 없이 새 시작 단어만 뽑는다.`
-                : `# 끝말잇기 시작 요청\n사용자가 끝말잇기를 하고 싶어함.\n\n먼저 단어 데이터셋을 불러와야 게임을 진행할 수 있다.`);
-
-            if (!isRestart) {
-                const introText = "ㅇㅋ 일단 알겠음 ㅇㅇ\n\n- 잠시만 기다려주세요.";
-
-                const step1 = "## 명령 실행\n_> 명령 실행함\n```\ncurl -s https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json\n```";
-                const step2 = "**Console:** Content extraction successful.";
-                const step3 = "Loading was successful. Now, we will prepare for the word chain game.";
-                const step4 = "...Now, I will select a starting word from the extracted text. Since I am a nice ai assistant, I won't make the first word a one-shot word. 😏";
-
-                const blocks = [step1, step2, step3, step4];
-                for (const block of blocks) {
-                    appendThoughtText(thoughtEl, block);
-                    const chatContainer = document.getElementById('chat-container');
-                    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
-                    const isCommandStep = block.includes('_> 명령') || block.includes('```');
-                    const delay = isCommandStep ? (2000 + Math.random() * 3000) : (500 + Math.random() * 800);
-                    await new Promise(r => setTimeout(r, delay));
-                }
-
-                await typeWriterEffect(msgEl, introText, 10);
-                await loadWordChainData();
-            } else {
-                await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
-            }
-
-            const startWord = pickStartingWord();
-            wordChainGame.active = true;
-            wordChainGame.awaitingRestart = false;
-            wordChainGame.usedWords = new Set([startWord]);
-            wordChainGame.lastWord = startWord;
-
-            const finalMsg = isRestart
-                ? `좋음 한판 더 가자 🔥\n제가 먼저 시작합니다!  '${startWord}'`
-                : `끝말잇기 API 로드를 완료했어요!\n끝말잇기를 종료하려면 "끝말잇기 끝"이라고 해주세요.\n기권하시고 싶다면 "gg"!\n저부터 시작합니다!  '${startWord}'`;
-
-            if (!isRestart) {
-                await new Promise(r => setTimeout(r, 300));
-                const currentHtml = msgEl.innerHTML;
-                msgEl.innerHTML = currentHtml + '<br><br>';
-                await typeWriterEffect(msgEl, finalMsg, 10);
-            } else {
-                await typeWriterEffect(msgEl, finalMsg, 10);
-            }
-
-            if (toolbarEl) toolbarEl.classList.remove('disabled');
-        }
-
         async function sendMessage() {
             if (isGenerating) return;
 
@@ -1637,12 +1513,7 @@
             chatContainer.appendChild(botWrapper);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 끝말잇기 게임이 진행 중이거나, 지금 시작하려는 경우 전용 핸들러로 분기
-            if (wordChainGame.active || wordChainGame.awaitingRestart || /^끝말잇기$/i.test(query)) {
-                await processWordChainTurn(botWrapper, query, currentMsgId, currentThoughtId);
-            } else {
-                await processBotOutput(botWrapper, query, currentMsgId, currentThoughtId);
-            }
+            await processBotOutput(botWrapper, query, currentMsgId, currentThoughtId);
             setUIState(false);
         }
 
@@ -1659,10 +1530,6 @@
             messageCounter = 1;
             lastUserQuery = "";
             repeatCount = 0;
-            wordChainGame.active = false;
-            wordChainGame.awaitingRestart = false;
-            wordChainGame.usedWords = new Set();
-            wordChainGame.lastWord = "";
             showToast('대화가 초기화되었습니다 🧹');
         }
 
@@ -1812,220 +1679,6 @@
         }
 
         /* --- 마크다운 포맷 렌더링 --- */
-        /* ======================= 끝말잇기 게임 로직 ======================= */
-
-        // 두음법칙 매핑: 단어 첫 글자가 ㄴ/ㄹ 계열일 때 대응되는 원음 초성
-        // 예: '이'로 시작하려면 '리'로 시작하는 단어도 허용, '여'는 '려'도 허용 등
-        const DUEUM_MAP = {
-            // 두음법칙 적용형 -> 원형(한자음) 매핑 (초성+중성 기준)
-            "냐": ["랴"], "녀": ["려"], "뇨": ["료"], "뉴": ["류"], "니": ["리"],
-            "야": ["랴", "야"], "여": ["려"], "예": ["례"], "요": ["료"], "유": ["류"], "이": ["리", "이"],
-            "라": ["나"], "래": ["내"], "로": ["노"], "료": ["뇨"], "루": ["누"], "르": ["느"], "리": ["니"],
-            "낙": ["락"], "내": ["래"], "노": ["로"], "뇌": ["뢰"], "누": ["루"], "느": ["르"]
-        };
-
-        // 한글 음절 분해 (초성/중성/종성)
-        const HANGUL_START = 0xAC00;
-        const HANGUL_END = 0xD7A3;
-        const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-        const JUNG = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
-        const JONG = ["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-
-        function isHangulSyllable(ch) {
-            const code = ch.charCodeAt(0);
-            return code >= HANGUL_START && code <= HANGUL_END;
-        }
-
-        function decomposeHangul(ch) {
-            if (!isHangulSyllable(ch)) return null;
-            const code = ch.charCodeAt(0) - HANGUL_START;
-            const cho = Math.floor(code / (21 * 28));
-            const jung = Math.floor((code % (21 * 28)) / 28);
-            const jong = code % 28;
-            return { cho: CHO[cho], jung: JUNG[jung], jong: JONG[jong] };
-        }
-
-        // 두음법칙을 고려해 "이어지는 글자"가 유효한지 검사
-        // prevTail: 이전 단어의 마지막 글자, nextHead: 다음 단어의 첫 글자
-        function isValidChainLetter(prevTail, nextHead) {
-            if (prevTail === nextHead) return true;
-            // 두음법칙 허용: nextHead가 두음법칙 적용형이고 prevTail이 그 원형 중 하나라면 허용
-            if (DUEUM_MAP[nextHead] && DUEUM_MAP[nextHead].includes(prevTail)) return true;
-            // 반대 방향도 허용 (마지막 글자가 두음법칙 적용형인 경우)
-            if (DUEUM_MAP[prevTail] && DUEUM_MAP[prevTail].includes(nextHead)) return true;
-            return false;
-        }
-
-        // 끝말잇기용 단어 데이터를 GitHub에서 로드 (다운로드가 아닌 fetch로 즉시 사용)
-        async function loadWordChainData() {
-            if (wordChainGame.wordsData) return wordChainGame.wordsData;
-            try {
-                const res = await fetch('https://raw.githubusercontent.com/UNTITLED-HUB/kr_words/main/kr_words.json');
-                const rawData = await res.json();
-
-                // 원본 데이터도 NFC로 정규화 (소스가 어떤 형태로 인코딩되어 있든 일관성 보장)
-                const data = {
-                    always: (rawData.always || []).map(w => w.normalize('NFC')),
-                    normal: {},
-                    attack: {}
-                };
-                const rawNormal = rawData.normal || {};
-                for (const key in rawNormal) {
-                    data.normal[key.normalize('NFC')] = rawNormal[key].map(w => w.normalize('NFC'));
-                }
-                const rawAttack = rawData.attack || {};
-                for (const key in rawAttack) {
-                    data.attack[key.normalize('NFC')] = rawAttack[key].map(w => w.normalize('NFC'));
-                }
-
-                wordChainGame.wordsData = data;
-
-                // 빠른 조회를 위한 전체 단어 Set 사전 구축 (O(1) 존재 검사)
-                const allWordsSet = new Set();
-                data.always.forEach(w => allWordsSet.add(w));
-                for (const key in data.normal) data.normal[key].forEach(w => allWordsSet.add(w));
-                for (const key in data.attack) data.attack[key].forEach(w => allWordsSet.add(w));
-                wordChainGame.allWordsSet = allWordsSet;
-
-                return data;
-            } catch (e) {
-                console.error('단어 데이터 로드 실패:', e);
-                return null;
-            }
-        }
-
-        // normal 딕셔너리 구조 { "초성글자": [단어들...] } 에서 특정 글자로 시작하는 단어 목록 수집
-        // 두음법칙까지 고려해 가능한 모든 시작 글자 후보를 모아서 검색
-        function getCandidateStartLetters(letter) {
-            const candidates = [letter];
-            if (DUEUM_MAP[letter]) candidates.push(...DUEUM_MAP[letter]);
-            for (const key in DUEUM_MAP) {
-                if (DUEUM_MAP[key].includes(letter)) candidates.push(key);
-            }
-            return [...new Set(candidates)];
-        }
-
-        // 다음 이어질 단어를 찾는다. attack(공격 한방단어)는 가능하면 피하고 normal 우선.
-        function findNextWord(prevWord) {
-            const data = wordChainGame.wordsData;
-            if (!data) return null;
-
-            const tail = prevWord[prevWord.length - 1];
-            const startLetters = getCandidateStartLetters(tail);
-
-            const alwaysSet = new Set((data.always || []).map(w => w));
-            const alwaysStartLetters = new Set((data.always || []).map(w => w[0]));
-            const attackDict = data.attack || {};
-            const normalDict = data.normal || {};
-
-            // 후보 단어 모으기: normal 우선
-            let normalCandidates = [];
-            let attackCandidates = [];
-
-            for (const sl of startLetters) {
-                if (normalDict[sl]) {
-                    normalCandidates.push(...normalDict[sl]);
-                }
-                if (attackDict[sl]) {
-                    attackCandidates.push(...attackDict[sl]);
-                }
-            }
-
-            // 사용되지 않았고, always(한방단어)가 아니며, 2글자 이상인 단어만 필터링
-            function filterValid(list) {
-                return list.filter(w =>
-                    w && w.length >= 2 &&
-                    !wordChainGame.usedWords.has(w) &&
-                    !alwaysSet.has(w)
-                );
-            }
-
-            normalCandidates = filterValid(normalCandidates);
-            attackCandidates = filterValid(attackCandidates);
-
-            // 1순위: normal 단어 중, 그 단어의 끝글자가 always로 이어지지 않고
-            //        실제로 다음 단어가 존재하는 완전히 안전한 단어
-            const safeNormal = normalCandidates.filter(w => {
-                const nextTail = w[w.length - 1];
-                const nextStarts = getCandidateStartLetters(nextTail);
-                if (nextStarts.some(sl => alwaysStartLetters.has(sl))) return false;
-                return nextStarts.some(sl => (normalDict[sl] && normalDict[sl].length > 0) || (attackDict[sl] && attackDict[sl].length > 0));
-            });
-
-            if (safeNormal.length > 0) {
-                return safeNormal[Math.floor(Math.random() * safeNormal.length)];
-            }
-            if (normalCandidates.length > 0) {
-                return normalCandidates[Math.floor(Math.random() * normalCandidates.length)];
-            }
-            if (attackCandidates.length > 0) {
-                return attackCandidates[Math.floor(Math.random() * attackCandidates.length)];
-            }
-            return null; // 이어갈 단어 없음 (봇이 막힘)
-        }
-
-        // 첫 시작 단어 선택: 한방단어(always)로 절대 이어지지 않는 안전한 일반 단어
-        function pickStartingWord() {
-            const data = wordChainGame.wordsData;
-            if (!data) return "사랑";
-
-            const alwaysSet = new Set((data.always || []).map(w => w));
-            const normalDict = data.normal || {};
-            const attackDict = data.attack || {};
-
-            const allNormalWords = [];
-            for (const key in normalDict) {
-                allNormalWords.push(...normalDict[key]);
-            }
-
-            // 시작 단어의 끝 글자로 이어질 수 있는 모든 후보 시작 글자(두음법칙 포함) 중
-            // 하나라도 always(한방단어) 목록에 걸리면 그 단어는 제외
-            const alwaysStartLetters = new Set((data.always || []).map(w => w[0]));
-
-            const safeWords = allNormalWords.filter(w => {
-                if (!w || w.length < 2) return false;
-                if (alwaysSet.has(w)) return false;
-                const tail = w[w.length - 1];
-                const nextStarts = getCandidateStartLetters(tail);
-                // 두음법칙으로 확장된 시작 글자 중 하나라도 always와 겹치면 위험 단어로 배제
-                if (nextStarts.some(sl => alwaysStartLetters.has(sl))) return false;
-                // 실제로 이어갈 수 있는 일반 단어가 존재해야 함
-                return nextStarts.some(sl => (normalDict[sl] && normalDict[sl].length > 0) || (attackDict[sl] && attackDict[sl].length > 0));
-            });
-
-            const pool = safeWords.length > 0 ? safeWords : allNormalWords;
-            return pool[Math.floor(Math.random() * pool.length)] || "사랑";
-        }
-
-        // 사용자가 입력한 단어가 유효한지 검증
-        // 사용자가 입력한 단어가 유효한지 검증
-        // 반환: { valid: bool, reason: string }
-        function validateUserWord(word) {
-            const data = wordChainGame.wordsData;
-            if (!data) return { valid: false, reason: 'no_data' };
-
-            // 순수 한글 단어인지 확인 (숫자/특수문자/공백 섞인 잡담은 게임 대상에서 제외)
-            if (!/^[가-힣]+$/.test(word)) return { valid: false, reason: 'not_korean' };
-            if (word.length < 2) return { valid: false, reason: 'too_short' };
-            if (wordChainGame.usedWords.has(word)) return { valid: false, reason: 'duplicate' };
-
-            const prevTail = wordChainGame.lastWord[wordChainGame.lastWord.length - 1];
-            const head = word[0];
-            if (!isValidChainLetter(prevTail, head)) return { valid: false, reason: 'wrong_start' };
-
-            // 사전(always/normal/attack)에 실제로 등재된 단어인지 확인 (Set 기반 O(1) 조회)
-            // 입력은 processWordChainTurn에서 이미 NFC로 정규화되고, 사전 데이터도 로드 시
-            // NFC로 정규화해 저장하므로 정상적인 사전 등재 단어는 항상 정확히 매칭된다.
-            const exists = wordChainGame.allWordsSet && wordChainGame.allWordsSet.has(word);
-            if (!exists) return { valid: false, reason: 'not_in_dict' };
-
-            // always(한방단어)는 사전에는 있지만 게임 중 낼 수 없는 단어이므로 별도 차단
-            const alwaysSet = new Set(data.always || []);
-            if (alwaysSet.has(word)) return { valid: false, reason: 'always_word' };
-
-            return { valid: true, reason: 'ok' };
-        }
-
         let codeBlockCounter = 0;
 
         function renderMarkdown(text) {

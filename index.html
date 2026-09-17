@@ -659,7 +659,7 @@
                 <!-- 실시간 CAPTCHA 렌더링 영역 (스크립트 로드 시 표시됨) -->
                 <div class="doc-section">
                     <h3>🛡️ jCAPTCHA 데모</h3>
-                    <div data-jcaptcha></div>
+                    <div data-jcaptcha-v3></div>
                 </div>
 
                 <!-- 파일 구성 -->
@@ -674,20 +674,24 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>jcaptcha.js</code></td>
-                                <td>원본 소스 (수정할 땐 이 파일)</td>
-                            </tr>
-                            <tr>
                                 <td><code>jcaptcha.min.js</code></td>
-                                <td>실제 배포용 (CDN에 올리는 파일)</td>
+                                <td>V3 (문제 풀이형) 배포용 스크립트. 이 페이지의 데모가 사용하는 실제 파일.</td>
                             </tr>
                             <tr>
-                                <td><code>demo.html</code></td>
-                                <td>사용 예시</td>
+                                <td><code>jcaptcha-v2.js</code></td>
+                                <td>V2 (접속 시간 자동 검사) 소스. 필요한 페이지에 별도로 추가해서 사용.</td>
+                            </tr>
+                            <tr>
+                                <td><code>index.html</code></td>
+                                <td>사용 예시 겸 실제 배포 페이지 (지금 보고 있는 이 페이지)</td>
                             </tr>
                             <tr>
                                 <td><code>gwitricks.mp3</code></td>
                                 <td>문제 10번(노래 맞추기)에 쓰이는 음원</td>
+                            </tr>
+                            <tr>
+                                <td><code>mc1.mp3</code></td>
+                                <td>문제 14번(가사 채우기)에 쓰이는 음원 — 아직 저장소에 없음, 추가되면 같은 폴더에 올려야 함</td>
                             </tr>
                         </tbody>
                     </table>
@@ -696,11 +700,12 @@
                 <!-- 사용법 & 코드 로드 -->
                 <div class="doc-section">
                     <h3>🚀 사용법 &amp; 코드 로드</h3>
-                    <p>HTML에 두 줄만 추가하면 <code>data-jcaptcha</code> 속성이 붙은 요소마다 캡차가 자동으로 렌더링됩니다.</p>
+                    <p>HTML에 두 줄만 추가하면 <code>data-jcaptcha-v3</code> 속성이 붙은 요소마다 캡차가 자동으로 렌더링됩니다. (이 저장소는 GitHub Pages로 배포되므로, 같은 저장소 안에서는 절대경로 대신 파일명만 적어도 됩니다.)</p>
                     <div class="code-block">
-                        <pre><code>&lt;div data-jcaptcha&gt;&lt;/div&gt;
-&lt;script src="https://cdn.jsdelivr.net/gh/UNTITLED-HUB/choimin/latest/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
+                        <pre><code>&lt;div data-jcaptcha-v3&gt;&lt;/div&gt;
+&lt;script src="jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
                     </div>
+                    <p>다른 사이트에서 불러올 때는 GitHub Pages 주소를 그대로 사용하세요 (아래 "GitHub Pages로 불러오기" 참고).</p>
                 </div>
 
                 <!-- 결과 콜백 등록 -->
@@ -708,28 +713,33 @@
                     <h3>⚡ 결과 콜백 등록</h3>
                     <div class="code-block">
                         <pre><code>&lt;script&gt;
-  window.jcaptchaOnSuccess = function(data) {
+  window.jcaptchaV3OnSuccess = function(data) {
     console.log('인증 성공, 토큰:', data.token);
     // 여기서 폼 제출 / 서버 전송 등 처리
   };
 
-  window.jcaptchaOnError = function(data) {
+  window.jcaptchaV3OnError = function(data) {
     console.log('인증 실패');
   };
 &lt;/script&gt;</code></pre>
                     </div>
                     <ul>
-                        <li><code>jcaptchaOnSuccess</code> : 3문제를 함정 없이 통과하면 호출됨</li>
-                        <li><code>jcaptchaOnError</code> : 함정 답을 고르거나 2개 이상 건너뛰면 호출됨 (실패 후 자동으로 문제 재시작)</li>
+                        <li><code>jcaptchaV3OnSuccess</code> : 3문제를 함정 없이 통과하면 호출됨</li>
+                        <li><code>jcaptchaV3OnError</code> : 함정 답을 고르거나 2개 이상 건너뛰면 호출됨 (실패 후 자동으로 문제 재시작)</li>
                     </ul>
                 </div>
 
-                <!-- GitHub + CDN 배포 -->
+                <!-- GitHub Pages 배포 -->
                 <div class="doc-section">
-                    <h3>🌐 GitHub + CDN으로 불러오기</h3>
-                    <p>GitHub에 올린 파일은 jsDelivr CDN을 통해 불러올 수 있습니다.</p>
+                    <h3>🌐 GitHub Pages로 불러오기 (권장)</h3>
+                    <p>이 저장소는 GitHub Pages로 배포되어 있어서, 아래 고정 주소로 안정적으로 불러올 수 있습니다. (이전에 쓰던 jsDelivr <code>/latest/</code> 경로는 실제로 존재하지 않는 경로라 항상 로드에 실패했습니다 — 이번에 이 주소로 교체했습니다.)</p>
                     <div class="code-block">
-                        <pre><code>&lt;script src="https://cdn.jsdelivr.net/gh/UNTITLED-HUB/choimin/latest/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
+                        <pre><code>&lt;script src="https://untitled-hub.github.io/choimin/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
+                    </div>
+                    <p>V2를 함께 쓰려면 같은 방식으로 <code>jcaptcha-v2.js</code>를 추가로 불러오면 됩니다.</p>
+                    <div class="code-block">
+                        <pre><code>&lt;div data-jcaptcha-v2&gt;&lt;/div&gt;
+&lt;script src="https://untitled-hub.github.io/choimin/jcaptcha-v2.js"&gt;&lt;/script&gt;</code></pre>
                     </div>
                 </div>
 
@@ -737,9 +747,10 @@
                 <div class="doc-section">
                     <h3>⚙️ 동작 방식 및 주의사항</h3>
                     <ul>
-                        <li><strong>동작 방식:</strong> 체크박스 클릭 ➔ 12문제 중 3개 무작위 출제 ➔ 함정을 피해서 통과 시 <code>jcaptchaOnSuccess</code> 콜백 및 토큰 발급.</li>
-                        <li><strong>mp3 파일 위치:</strong> <code>gwitricks.mp3</code>는 <code>jcaptcha.min.js</code>와 같은 폴더에 있어야 문제 10번에서 음원이 재현됩니다.</li>
-                        <li><strong>클라이언트 전용:</strong> 본 모듈은 클라이언트 검증 전용이므로 실제 서비스 적용 시 발급된 <code>token</code>을 서버에서도 검증해야 합니다.</li>
+                        <li><strong>동작 방식(V3):</strong> 체크박스 클릭 ➔ 14문제 중 3개 무작위 출제 ➔ 함정을 피해서 통과 시 <code>jcaptchaV3OnSuccess</code> 콜백 및 토큰 발급. 2개 이상 건너뛰어도 실패 처리됩니다.</li>
+                        <li><strong>동작 방식(V2):</strong> 요소가 페이지에 있으면 자동으로 "검사 중" 연출 후, 접속 시각(브라우저 로컬 시간 기준)만으로 통과/차단을 결정합니다. 실제 봇 탐지 기능은 없습니다.</li>
+                        <li><strong>mp3 파일 위치:</strong> <code>gwitricks.mp3</code>는 <code>jcaptcha.min.js</code>와 같은 폴더에 있어야 문제 10번에서 음원이 재현됩니다. (문제 14번용 <code>mc1.mp3</code>는 아직 저장소에 없어 해당 문제가 나오면 음원 없이 표시됩니다.)</li>
+                        <li><strong>클라이언트 전용:</strong> V2, V3 모두 클라이언트(브라우저) 검증 전용입니다. 로그인·결제처럼 실제로 막아야 하는 상황에는 발급된 <code>token</code>을 서버에서도 검증하는 절차가 반드시 필요합니다.</li>
                     </ul>
                 </div>
             </div>
@@ -872,7 +883,7 @@
     <div id="toast">알림</div>
 
     <!-- jCAPTCHA 스크립트 로드 -->
-    <script src="https://cdn.jsdelivr.net/gh/UNTITLED-HUB/choimin/latest/jcaptcha.min.js"></script>
+    <script src="jcaptcha.min.js"></script>
 
     <script>
         /* --- 탭 및 페이지 전환 스크립트 --- */
@@ -2004,12 +2015,12 @@
         }
 
         /* --- jCAPTCHA 콜백 핸들러 설정 --- */
-        window.jcaptchaOnSuccess = function(data) {
+        window.jcaptchaV3OnSuccess = function(data) {
             console.log('인증 성공, 토큰:', data ? data.token : 'NO_TOKEN');
             showToast('jCAPTCHA 인증 성공!');
         };
 
-        window.jcaptchaOnError = function(data) {
+        window.jcaptchaV3OnError = function(data) {
             console.log('인증 실패');
             showToast('jCAPTCHA 인증 실패! 다시 시도합니다.');
         };

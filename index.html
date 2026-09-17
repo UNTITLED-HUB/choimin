@@ -235,7 +235,14 @@
         }
 
         /* --- Choimini AI 페이지 스타일 --- */
+        #ai-version-select {
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+        }
+
         #ai-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -610,7 +617,6 @@
                 <li><a id="nav-expansion" onclick="switchTab('expansion')">Expansion APP</a></li>
                 <li><a id="nav-hacking" onclick="switchTab('hacking')">hack-account</a></li>
                 <li><a id="nav-ai" onclick="switchTab('ai')">chiomini</a></li>
-                <li><a id="nav-scripts" class="disabled" onclick="showToast('현재 비활성화된 서비스입니다.')">Scripts</a></li>
             </ul>
         </div>
     </header>
@@ -654,13 +660,6 @@
                             </div>
                             <div class="service-arrow">&rarr;</div>
                         </div>
-                        <div class="service-card disabled" onclick="showToast('현재 비활성화된 서비스입니다.')">
-                            <div class="service-info">
-                                <h3>Scripts</h3>
-                                <p>직접 개발하거나 추천하는 스크립트를 확인해보세요!</p>
-                            </div>
-                            <div class="service-arrow">&rarr;</div>
-                        </div>
                     </div>
                 </section>
             </main>
@@ -671,12 +670,17 @@
             <div class="subpage-container doc-layout">
                 <div class="doc-header">
                     <h2>jCAPTCHA</h2>
-                    <p>원본 Roblox Lua jCAPTCHA를 웹(HTML/JS)으로 그대로 이식한 클라이언트 전용 CAPTCHA입니다.</p>
+                    <p>원본 Roblox Lua jCAPTCHA를 웹(HTML/JS)으로 이식한, 클라이언트 전용 장난 CAPTCHA 모음입니다. 문제를 풀어야 통과되는 <strong>V3</strong>와, 접속 시간대만으로 자동 통과/차단을 가르는 <strong>V2</strong> 두 가지 버전이 있고, 한 페이지에 같이 써도 서로 충돌하지 않습니다.</p>
+                    <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-top:1rem;">
+                        <button onclick="downloadFile('JCAPTCHA.md')" style="padding:0.7rem 1.1rem; background-color: var(--accent-color); color:#030712; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 설명서 다운로드 (JCAPTCHA.md)</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/JCAPTCHA.md', '_blank')" style="padding:0.7rem 1.1rem; background-color:#222; color:#fff; border:1px solid var(--border-color); border-radius:8px; font-weight:bold; cursor:pointer;">🔗 GitHub에서 보기</button>
+                    </div>
                 </div>
 
                 <!-- 실시간 CAPTCHA 렌더링 영역 (스크립트 로드 시 표시됨) -->
                 <div class="doc-section">
-                    <h3>🛡️ jCAPTCHA 데모</h3>
+                    <h3>🛡️ jCAPTCHA V3 데모</h3>
+                    <p>아래는 문제 풀이형(V3) 데모입니다. 체크박스를 누르면 14개 문제 중 3개가 무작위로 출제되고, 각 문제마다 정해진 "함정 답"만 피하면 통과됩니다.</p>
                     <div data-jcaptcha-v3></div>
                 </div>
 
@@ -868,7 +872,36 @@
 
         <!-- 5. Choimini AI 뷰 -->
         <div id="view-ai" class="page-view">
-            <div id="ai-container">
+
+            <!-- 5-0. 버전 선택 화면 -->
+            <div id="ai-version-select">
+                <div class="subpage-container" style="padding-top:3rem;">
+                    <h2 style="margin-bottom:0.5rem;">chiomini</h2>
+                    <p style="color:var(--text-secondary); margin-bottom:2rem;">사용할 버전을 선택하세요.</p>
+                    <div class="vertical-service-list" style="max-width:600px; margin:0 auto;">
+                        <div class="service-card" onclick="chooseAiVersion('old')">
+                            <div class="service-info">
+                                <h3>구버전</h3>
+                                <p>이 사이트에 내장된 기존 최미나이 (끝말잇기, 반응형 대화 등)</p>
+                            </div>
+                            <div class="service-arrow">&rarr;</div>
+                        </div>
+                        <div class="service-card" onclick="chooseAiVersion('new')">
+                            <div class="service-info">
+                                <h3>신버전</h3>
+                                <p>새로 만든 최미나이 · choimini.enn.kr에서 열림 (새 탭)</p>
+                            </div>
+                            <div class="service-arrow">&rarr;</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5-1. 구버전 채팅 화면 (선택 전까지 숨김) -->
+            <div id="ai-container" style="display:none;">
+                <div style="padding: 0.6rem 1.5rem 0; flex-shrink:0;">
+                    <a onclick="showAiVersionSelect()" style="color:var(--accent-color); font-size:0.85rem; cursor:pointer;">&larr; 버전 선택으로 돌아가기</a>
+                </div>
                 <div id="chat-container">
                     <div id="intro-screen">
                         <h1>최민님을 기다리고 있었어요</h1>
@@ -879,14 +912,6 @@
                     <input type="text" id="user-input" placeholder="Choimini에게 질문하기..." onkeydown="if(event.key==='Enter') sendMessage()">
                     <button id="send-btn" onclick="sendMessage()">전송</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- 6. Scripts 뷰 (비활성화됨) -->
-        <div id="view-scripts" class="page-view">
-            <div class="subpage-container">
-                <h2>Scripts</h2>
-                <p>Chiomin.LLC에서 추천 및 개발한 다양한 스크립트 모음입니다.</p>
             </div>
         </div>
 
@@ -919,11 +944,34 @@
             if (targetNav) targetNav.classList.add('active');
 
             if (tabId === 'ai') {
-                setTimeout(() => {
-                    const inputEl = document.getElementById('user-input');
-                    if (inputEl) inputEl.focus();
-                }, 100);
+                // chiomini 탭에 들어올 때마다 버전 선택 화면부터 다시 보여줌
+                showAiVersionSelect();
             }
+        }
+
+        /* --- chiomini 버전 선택 --- */
+        function chooseAiVersion(version) {
+            if (version === 'new') {
+                window.open('https://choimini.enn.kr', '_blank');
+                showToast('새 탭에서 신버전 chiomini가 열렸습니다! 🚀');
+                return;
+            }
+            // 구버전: 이 페이지에 내장된 기존 채팅 UI를 보여줌
+            const selectEl = document.getElementById('ai-version-select');
+            const oldEl = document.getElementById('ai-container');
+            if (selectEl) selectEl.style.display = 'none';
+            if (oldEl) oldEl.style.display = 'flex';
+            setTimeout(() => {
+                const inputEl = document.getElementById('user-input');
+                if (inputEl) inputEl.focus();
+            }, 100);
+        }
+
+        function showAiVersionSelect() {
+            const selectEl = document.getElementById('ai-version-select');
+            const oldEl = document.getElementById('ai-container');
+            if (oldEl) oldEl.style.display = 'none';
+            if (selectEl) selectEl.style.display = 'block';
         }
 
         /* --- Choimini AI 엔진 스크립트 --- */

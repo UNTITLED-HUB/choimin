@@ -742,6 +742,13 @@
                     <div data-jcaptcha-v3></div>
                 </div>
 
+                <!-- V2 데모: jcaptcha-v2.js가 이 페이지에서도 실제로 로드/렌더링되는지 보여주는 라이브 데모 -->
+                <div class="doc-section">
+                    <h3>🕓 jCAPTCHA V2 데모</h3>
+                    <p>아래는 접속 시간대 기반(V2) 데모입니다. 별도 조작 없이 자동으로 "검사 중" → 통과/차단 결과가 표시됩니다.</p>
+                    <div data-jcaptcha-v2></div>
+                </div>
+
                 <!-- 파일 구성 -->
                 <div class="doc-section">
                     <h3>📦 파일 구성</h3>
@@ -984,7 +991,9 @@
     <div id="toast">알림</div>
 
     <!-- jCAPTCHA 스크립트 로드 -->
+    <!-- V3(문제 풀이형)와 V2(접속 시간대 기반)를 이 페이지에서도 함께 불러오도록 변경 -->
     <script src="jcaptcha.min.js"></script>
+    <script src="jcaptcha-v2.js"></script>
 
     <script>
         /* --- 탭 및 페이지 전환 스크립트 --- */

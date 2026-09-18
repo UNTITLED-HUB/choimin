@@ -1757,6 +1757,17 @@
             console.log('인증 실패');
             showToast('jCAPTCHA 인증 실패! 다시 시도합니다.');
         };
+
+        /* --- jCAPTCHA V2 성공/차단 콜백 --- */
+        window.jcaptchaV2OnSuccess = function(data) {
+            console.log('V2 인증 성공, 토큰:', data ? data.token : 'NO_TOKEN');
+            showToast('jCAPTCHA V2 인증 성공!');
+        };
+
+        window.jcaptchaV2OnBlocked = function(data) {
+            console.log('V2 접속 시간대 차단');
+            showToast('jCAPTCHA V2: 현재 접속 시간대에는 차단되었습니다.');
+        };
     </script>
 </body>
 </html>

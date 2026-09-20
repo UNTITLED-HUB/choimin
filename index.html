@@ -675,6 +675,7 @@
                 <li><a id="nav-expansion" onclick="switchTab('expansion')">Expansion APP</a></li>
                 <li><a id="nav-hacking" onclick="switchTab('hacking')">hack-account</a></li>
                 <li><a id="nav-ai" onclick="switchTab('ai')">chiomini</a></li>
+                <li><a id="nav-apps" onclick="switchTab('apps')">앱 다운로드</a></li>
             </ul>
         </div>
     </header>
@@ -715,6 +716,13 @@
                             <div class="service-info">
                                 <h3>chiomini</h3>
                                 <p>윤주성에 대해 질문할 수 있는 대화형 어시스턴트입니다.</p>
+                            </div>
+                            <div class="service-arrow">&rarr;</div>
+                        </div>
+                        <div class="service-card" onclick="switchTab('apps')">
+                            <div class="service-info">
+                                <h3>앱 다운로드</h3>
+                                <p>Choimini Desktop / Chrome 확장 프로그램을 내려받을 수 있습니다.</p>
                             </div>
                             <div class="service-arrow">&rarr;</div>
                         </div>
@@ -976,6 +984,55 @@
                 <div id="input-container">
                     <input type="text" id="user-input" placeholder="Choimini에게 질문하기..." onkeydown="if(event.key==='Enter') sendMessage()">
                     <button id="send-btn" onclick="sendMessage()">전송</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 앱 다운로드 뷰 -->
+        <div id="view-apps" class="page-view">
+            <div class="subpage-container doc-layout">
+                <div class="doc-header">
+                    <h2>📦 Choimini 앱 다운로드</h2>
+                    <p>Choimini를 다양한 환경에서 사용할 수 있는 앱들입니다. Google 계정으로 로그인하면 토큰 잔액이 모든 앱에서 공유됩니다.</p>
+                </div>
+
+                <div class="doc-section">
+                    <h3>🖥️ Choimini Desktop</h3>
+                    <p>Windows용 데스크톱 앱(Electron). Chat 모드(일반 채팅) / Code 모드(코드 작성 + PC 명령 실행)를 지원합니다.</p>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.5rem;">⚠️ 아직 실행 파일(.exe)로 빌드되지 않아, 지금은 소스 코드만 제공됩니다. <code>cd desktop &amp;&amp; npm run dist</code>로 직접 빌드할 수 있습니다.</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/choimini-desktop-source.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="downloadFile('choimini-desktop-source.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드 (소스)</button>
+                    </div>
+                </div>
+
+                <div class="doc-section">
+                    <h3>🧩 Chrome 확장 (Chrome in Choimini)</h3>
+                    <p>사이드 패널 + 브라우저 자동 탐색/양식 입력 기능이 있는 Chrome 확장 프로그램(MV3)입니다.</p>
+                    <div class="code-block">
+                        <pre><code>1. chrome://extensions 접속
+2. 우측 상단 '개발자 모드' 활성화
+3. '압축 해제된 확장 프로그램을 로드합니다' 클릭
+4. 압축을 푼 chrome-extension 폴더 선택
+5. 완료</code></pre>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/choimini-extension.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="downloadFile('choimini-extension.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드</button>
+                    </div>
+                </div>
+
+                <div class="doc-section">
+                    <h3>📱 Android 앱</h3>
+                    <p style="color:var(--text-secondary);">🚧 준비 중입니다. Android Studio 빌드가 아직 완료되지 않아 다운로드는 보류 중이며, 완료되는 대로 이 페이지에 추가됩니다.</p>
+                </div>
+
+                <div class="doc-section">
+                    <h3>📁 전체 소스 코드</h3>
+                    <p>Android / Chrome 확장 / Desktop / Verity 설치기 / Supabase 마이그레이션 등 Choimini 관련 모든 소스는 GitHub 저장소에서 확인할 수 있습니다.</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimini-apps', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub 저장소 열기</button>
+                    </div>
                 </div>
             </div>
         </div>

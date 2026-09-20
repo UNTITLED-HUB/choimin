@@ -738,8 +738,8 @@
                     <h2>jCAPTCHA</h2>
                     <p>원본 Roblox Lua jCAPTCHA를 웹(HTML/JS)으로 이식한, 클라이언트 전용 장난 CAPTCHA 모음입니다. 문제를 풀어야 통과되는 <strong>V3</strong>와, 접속 시간대만으로 자동 통과/차단을 가르는 <strong>V2</strong> 두 가지 버전이 있고, 한 페이지에 같이 써도 서로 충돌하지 않습니다.</p>
                     <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-top:1rem;">
-                        <button onclick="downloadFile('JCAPTCHA.md')" style="padding:0.7rem 1.1rem; background-color: var(--accent-color); color:#030712; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 설명서 다운로드 (JCAPTCHA.md)</button>
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/JCAPTCHA.md', '_blank')" style="padding:0.7rem 1.1rem; background-color:#222; color:#fff; border:1px solid var(--border-color); border-radius:8px; font-weight:bold; cursor:pointer;">🔗 GitHub에서 보기</button>
+                        <button onclick="downloadFile('Jcaptcha_Modules/JCAPTCHA.md')" style="padding:0.7rem 1.1rem; background-color: var(--accent-color); color:#030712; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 설명서 다운로드 (JCAPTCHA.md)</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/Jcaptcha_Modules/JCAPTCHA.md', '_blank')" style="padding:0.7rem 1.1rem; background-color:#222; color:#fff; border:1px solid var(--border-color); border-radius:8px; font-weight:bold; cursor:pointer;">🔗 GitHub에서 보기</button>
                     </div>
                 </div>
 
@@ -798,7 +798,7 @@
                     <p>HTML에 두 줄만 추가하면 <code>data-jcaptcha-v3</code> 속성이 붙은 요소마다 캡차가 자동으로 렌더링됩니다. (이 저장소는 GitHub Pages로 배포되므로, 같은 저장소 안에서는 절대경로 대신 파일명만 적어도 됩니다.)</p>
                     <div class="code-block">
                         <pre><code>&lt;div data-jcaptcha-v3&gt;&lt;/div&gt;
-&lt;script src="jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="Jcaptcha_Modules/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
                     </div>
                     <p>다른 사이트에서 불러올 때는 GitHub Pages 주소를 그대로 사용하세요 (아래 "GitHub Pages로 불러오기" 참고).</p>
                 </div>
@@ -829,12 +829,12 @@
                     <h3>🌐 GitHub Pages로 불러오기 (권장)</h3>
                     <p>이 저장소는 GitHub Pages로 배포되어 있어서, 아래 고정 주소로 안정적으로 불러올 수 있습니다. (이전에 쓰던 jsDelivr <code>/latest/</code> 경로는 실제로 존재하지 않는 경로라 항상 로드에 실패했습니다 — 이번에 이 주소로 교체했습니다.)</p>
                     <div class="code-block">
-                        <pre><code>&lt;script src="https://untitled-hub.github.io/choimin/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
+                        <pre><code>&lt;script src="https://untitled-hub.github.io/choimin/Jcaptcha_Modules/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
                     </div>
                     <p>V2를 함께 쓰려면 같은 방식으로 <code>jcaptcha-v2.js</code>를 추가로 불러오면 됩니다.</p>
                     <div class="code-block">
                         <pre><code>&lt;div data-jcaptcha-v2&gt;&lt;/div&gt;
-&lt;script src="https://untitled-hub.github.io/choimin/jcaptcha-v2.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="https://untitled-hub.github.io/choimin/Jcaptcha_Modules/jcaptcha-v2.js"&gt;&lt;/script&gt;</code></pre>
                     </div>
                 </div>
 
@@ -899,10 +899,10 @@
 
                     <p style="margin-top: 1rem;">아래 버튼으로 다운로드 받을 수 있습니다.</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/choimin-lnc.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimin-lnc.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
                             🔗 GitHub에서 다운로드
                         </button>
-                        <button onclick="downloadFile('choimin-lnc.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
+                        <button onclick="downloadFile('App/choimin-lnc.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
                             💾 로컬 다운로드
                         </button>
                     </div>
@@ -1001,8 +1001,8 @@
                     <p>Windows용 데스크톱 앱(Electron). Chat 모드(일반 채팅) / Code 모드(코드 작성 + PC 명령 실행)를 지원합니다.</p>
                     <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.5rem;">⚠️ 아직 실행 파일(.exe)로 빌드되지 않아, 지금은 소스 코드만 제공됩니다. <code>cd desktop &amp;&amp; npm run dist</code>로 직접 빌드할 수 있습니다.</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/choimini-desktop-source.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
-                        <button onclick="downloadFile('choimini-desktop-source.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드 (소스)</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimini-desktop-source.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="downloadFile('App/choimini-desktop-source.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드 (소스)</button>
                     </div>
                 </div>
 
@@ -1017,8 +1017,8 @@
 5. 완료</code></pre>
                     </div>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/choimini-extension.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
-                        <button onclick="downloadFile('choimini-extension.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimini-extension.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="downloadFile('App/choimini-extension.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드</button>
                     </div>
                 </div>
 
@@ -1049,8 +1049,8 @@
 
     <!-- jCAPTCHA 스크립트 로드 -->
     <!-- V3(문제 풀이형)와 V2(접속 시간대 기반)를 이 페이지에서도 함께 불러오도록 변경 -->
-    <script src="jcaptcha.min.js"></script>
-    <script src="jcaptcha-v2.js"></script>
+    <script src="Jcaptcha_Modules/jcaptcha.min.js"></script>
+    <script src="Jcaptcha_Modules/jcaptcha-v2.js"></script>
 
     <script>
         /* --- 탭 및 페이지 전환 스크립트 --- */
@@ -1647,7 +1647,7 @@
                 // 확장앱 요청: 자동 다운로드
                 if (query.match(/확장앱|^확장$|expansion/i)) {
                     setTimeout(() => {
-                        downloadFile('choimin-lnc.zip');
+                        downloadFile('App/choimin-lnc.zip');
                     }, 800);
                 }
                 

@@ -386,6 +386,62 @@
             font-weight: bold;
         }
 
+        /* --- NO BRAIN 스위치 (구버전 채팅) --- */
+        #nobrain-row {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+            padding: 0.55rem 1rem 0;
+            background-color: var(--chat-bg);
+            font-size: 0.82rem;
+        }
+
+        #nobrain-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #nobrain-toggle input { display: none; }
+
+        .nb-track {
+            width: 38px;
+            height: 21px;
+            border-radius: 999px;
+            background-color: var(--border-color);
+            position: relative;
+            transition: background-color 0.18s;
+            flex-shrink: 0;
+        }
+
+        .nb-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            transition: transform 0.18s;
+        }
+
+        #nobrain-toggle input:checked + .nb-track { background-color: var(--accent-color); }
+        #nobrain-toggle input:checked + .nb-track .nb-thumb { transform: translateX(17px); }
+
+        .nb-label { font-weight: bold; letter-spacing: 0.04em; }
+
+        #nobrain-state {
+            color: var(--text-secondary);
+            flex: 1;
+            min-width: 140px;
+            line-height: 1.5;
+        }
+
+        #nobrain-state.err { color: var(--accent-pink); }
+
         #input-container {
             padding: 1rem;
             background-color: var(--chat-bg);
@@ -981,6 +1037,14 @@
                         <p>무엇을 도와드릴까요?</p>
                     </div>
                 </div>
+                <div id="nobrain-row">
+                    <label id="nobrain-toggle" title="켜면 이 기기 안에서 Gemma 가 직접 답해요 (로그인 없이 무료)">
+                        <input type="checkbox" id="nobrain-check" onchange="onNoBrainToggle(this.checked)">
+                        <span class="nb-track"><span class="nb-thumb"></span></span>
+                        <span class="nb-label">NO BRAIN</span>
+                    </label>
+                    <span id="nobrain-state">끄면 기존 최미나이, 켜면 이 기기에서 Gemma 가 직접 답해요 (로그인 불필요)</span>
+                </div>
                 <div id="input-container">
                     <input type="text" id="user-input" placeholder="Choimini에게 질문하기..." onkeydown="if(event.key==='Enter') sendMessage()">
                     <button id="send-btn" onclick="sendMessage()">전송</button>
@@ -1056,6 +1120,9 @@
     <script src="Jcaptcha_Modules/jcaptcha.min.js"></script>
     <script src="Jcaptcha_Modules/jcaptcha-v2.js"></script>
 
+    <!-- NO BRAIN: 기기 안에서 Gemma 를 돌리는 모듈 (서버로 아무것도 보내지 않는다 · 로그인 불필요) -->
+    <script src="choimini-localai.js?v=20261027"></script>
+
     <script>
         /* --- 탭 및 페이지 전환 스크립트 --- */
         function switchTab(tabId) {
@@ -1085,6 +1152,7 @@
                 return;
             }
             // 구버전: 이 페이지에 내장된 기존 채팅 UI를 보여줌
+            if (!nbWired) { nbWired = true; try { nbWire(); } catch (e) { console.warn('[NO BRAIN] wire', e); } }
             const selectEl = document.getElementById('ai-version-select');
             const oldEl = document.getElementById('ai-container');
             if (selectEl) selectEl.style.display = 'none';
@@ -1105,6 +1173,7 @@
         /* --- Choimini AI 엔진 스크립트 --- */
         let messageCounter = 1;
         let isGenerating = false;
+        let nbWired = false;   // NO BRAIN(로컬 Gemma) 연결을 한 번만 하도록
         let lastUserQuery = "";
         let repeatCount = 0;
 
@@ -1608,6 +1677,19 @@
             const thoughtEl = document.getElementById(thoughtId);
             const toolbarEl = botWrapper.querySelector('.action-toolbar');
 
+            // NO BRAIN 이 켜져 있으면 기기 안의 Gemma 가 답한다 (실패하면 기존 최미나이로 되돌아간다)
+            if (nbOn() && nbReady && window.ChoiminiLocalAI && window.ChoiminiLocalAI.ready()) {
+                try {
+                    await nbAnswer(query, msgEl, thoughtEl);
+                    if (toolbarEl) toolbarEl.classList.remove('disabled');
+                    return;
+                } catch (e) {
+                    console.warn('[NO BRAIN]', e);
+                    nbState('Gemma 가 답하지 못해서 기존 최미나이로 답했어요: ' + String((e && e.message) || e).slice(0, 80), true);
+                    if (thoughtEl) appendThoughtText(thoughtEl, '로컬 Gemma 실패 → 기존 최미나이로 대체');
+                }
+            }
+
             const { thought, response, timeMs } = generateChoiminiData(query);
 
             if (msgEl) msgEl.textContent = "생각하는 중...";
@@ -1691,6 +1773,210 @@
                 await processBotOutput(botWrapper, prompt, msgEl.id, thoughtEl.id);
             }
             setUIState(false);
+        }
+
+        /* ======================= NO BRAIN — 기기 안에서 Gemma 가 직접 답하기 =======================
+           · 켜면 choimini-localai.js(WebLLM)가 기기 사양(WebGPU·램)에 맞는 Gemma 를 자동으로 골라 내려받고,
+             그때부터 답변을 Gemma 가 만든다. 끄면 기존 스크립트 최미나이가 그대로 답한다.
+           · 서버로 아무것도 보내지 않으므로 로그인·토큰·API 키가 전혀 필요 없다.
+           · 모델이 크므로(기기에 따라 0.7~3.4GB) 처음 켤 때 한 번 물어보고, 받은 뒤엔 브라우저에 남아 재사용한다. */
+        const NB_LS_KEY = 'choimin.nobrain.on';
+        const NB_CONSENT_KEY = 'choimin.nobrain.consent';
+
+        // choimini-localai.js 가 참조하는 설정 객체 (이 페이지에는 신버전 같은 설정 화면이 없어서 여기서 들고 있는다)
+        const nbSettings = { localAI: { enabled: false, consent: false, model: 'auto' } };
+        let nbReady = false;        // Gemma 가 메모리에 올라와 답할 준비가 됐는지
+        let nbBusy = false;         // 켜는 중(내려받기/로딩) 중복 방지
+        const nbHistory = [];       // [{role:'user'|'assistant', content}] — Gemma 에게 줄 최근 대화
+
+        // 로컬 Gemma 용 짧은 캐릭터 설정. (서버의 전체 캐릭터 프롬프트는 비공개라 쓰지 않는다.
+        //  작은 모델이라 긴 지시문을 주면 오히려 답이 무너져서 핵심만 짧게 넣는다.)
+        const NB_PERSONA = [
+            '너는 "최미나이"라는 장난기 있는 한국어 AI 챗봇이다.',
+            '친한 친구처럼 반말로 답하고, 질문에는 정확하게 답하는 걸 가장 우선한다.',
+            '간단한 질문엔 한두 문장으로 짧게, 복잡한 질문엔 필요한 만큼만 설명한다.',
+            '모르는 건 아는 척하지 말고 솔직히 모른다고 한다.',
+            '욕설과 성적인 표현은 쓰지 않는다.'
+        ].join(' ');
+
+        function nbState(msg, isErr) {
+            const el = document.getElementById('nobrain-state');
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.toggle('err', !!isErr);
+        }
+
+        function nbSetChecked(on) {
+            const el = document.getElementById('nobrain-check');
+            if (el) el.checked = !!on;
+        }
+
+        function nbOn() { return !!(document.getElementById('nobrain-check') || {}).checked; }
+
+        /* 이 기기에서 쓸 수 있는지 + 어떤 모델이 걸리는지 확인 */
+        async function nbProbe() {
+            const LA = window.ChoiminiLocalAI;
+            if (!LA) return { ok: false, why: '로컬 AI 모듈을 불러오지 못했어요. 새로고침해 주세요.' };
+            await LA.probe();
+            const st = LA.status();
+            if (!st.supported) {
+                return { ok: false, why: '이 브라우저는 WebGPU 를 지원하지 않아서 Gemma 를 켤 수 없어요. 최신 Chrome/Edge 에서 다시 열어 주세요.' };
+            }
+            const m = LA.pickModel();
+            if (!m) {
+                return { ok: false, why: '이 기기는 메모리가 적어서 Gemma 를 돌리기 어려워요. 신버전 최미나이를 써 주세요.' };
+            }
+            return { ok: true, model: m, ramGB: st.ramGB, ramKnown: st.ramKnown };
+        }
+
+        /* 스위치를 눌렀을 때 */
+        async function onNoBrainToggle(on) {
+            const LA = window.ChoiminiLocalAI;
+
+            if (!on) {
+                nbSettings.localAI.enabled = false;
+                nbReady = false;
+                try { localStorage.setItem(NB_LS_KEY, '0'); } catch (e) {}
+                try { if (LA) LA.unload(); } catch (e) {}
+                nbState('끄면 기존 최미나이, 켜면 이 기기에서 Gemma 가 직접 답해요 (로그인 불필요)');
+                showToast('NO BRAIN 끔 · 기존 최미나이로 돌아갑니다');
+                return;
+            }
+
+            if (nbBusy) return;
+            nbBusy = true;
+            try {
+                nbState('이 기기에서 쓸 수 있는지 확인하는 중…');
+                const p = await nbProbe();
+                if (!p.ok) {
+                    nbSetChecked(false);
+                    nbSettings.localAI.enabled = false;
+                    try { localStorage.setItem(NB_LS_KEY, '0'); } catch (e) {}
+                    nbState(p.why, true);
+                    showToast('NO BRAIN 을 켤 수 없어요');
+                    return;
+                }
+
+                // 처음 켤 때만 내려받기 동의를 받는다
+                let consent = false;
+                try { consent = localStorage.getItem(NB_CONSENT_KEY) === '1'; } catch (e) {}
+                if (!consent) {
+                    const ramText = p.ramKnown ? ('이 기기 메모리 약 ' + p.ramGB + 'GB') : '기기 메모리를 정확히 알 수 없어 보수적으로 골랐어요';
+                    const msg = 'NO BRAIN 을 켜면 ' + p.model.label + ' 모델을 이 기기에 내려받아 실행해요.\n\n'
+                        + '· 내려받기 약 ' + p.model.mb + 'MB (' + ramText + ')\n'
+                        + '· 한 번 받으면 브라우저에 저장돼서 다음부터는 바로 켜져요\n'
+                        + '· 서버로 아무것도 보내지 않고, 로그인도 토큰도 필요 없어요\n\n'
+                        + '계속할까요?';
+                    if (!window.confirm(msg)) {
+                        nbSetChecked(false);
+                        nbState('끄면 기존 최미나이, 켜면 이 기기에서 Gemma 가 직접 답해요 (로그인 불필요)');
+                        return;
+                    }
+                    try { localStorage.setItem(NB_CONSENT_KEY, '1'); } catch (e) {}
+                }
+
+                nbSettings.localAI.consent = true;
+                nbSettings.localAI.enabled = true;
+                try { localStorage.setItem(NB_LS_KEY, '1'); } catch (e) {}
+
+                nbState(p.model.label + ' 준비 중…');
+                const ok = await LA.load();
+                const st = LA.status();
+                if (!ok || !LA.ready()) {
+                    nbSetChecked(false);
+                    nbSettings.localAI.enabled = false;
+                    nbReady = false;
+                    try { localStorage.setItem(NB_LS_KEY, '0'); } catch (e) {}
+                    nbState(st.error || 'Gemma 를 불러오지 못했어요.', true);
+                    return;
+                }
+                nbReady = true;
+                nbState('✅ ' + (st.model ? st.model.label : 'Gemma') + ' 준비됨 · 이 기기에서 직접 답해요');
+                showToast('NO BRAIN 켬 · ' + (st.model ? st.model.label : 'Gemma') + ' 가 답합니다 🧠');
+            } catch (e) {
+                nbSetChecked(false);
+                nbSettings.localAI.enabled = false;
+                nbReady = false;
+                nbState('오류가 나서 켜지 못했어요: ' + String((e && e.message) || e).slice(0, 120), true);
+            } finally {
+                nbBusy = false;
+            }
+        }
+
+        /* Gemma 로 답변 만들기. 글자가 오는 대로 화면에 붙인다. */
+        async function nbAnswer(query, msgEl, thoughtEl) {
+            const LA = window.ChoiminiLocalAI;
+            const st = LA.status();
+            const label = st.model ? st.model.label : 'Gemma';
+
+            if (thoughtEl) {
+                setThoughtText(thoughtEl, '[NO BRAIN] ' + label + ' 로 이 기기 안에서 직접 생각하는 중\n'
+                    + '· 서버로 아무것도 보내지 않음 · 로그인/토큰 사용 안 함');
+            }
+            if (msgEl) msgEl.textContent = '생각하는 중...';
+
+            // 문맥 길이가 짧으니 최근 대화만 넣는다
+            const limit = LA.ctxChars();
+            const msgs = [{ role: 'system', content: NB_PERSONA }];
+            let used = 0;
+            const recent = [];
+            for (let i = nbHistory.length - 1; i >= 0; i--) {
+                const c = nbHistory[i];
+                used += (c.content || '').length;
+                if (used > limit) break;
+                recent.unshift(c);
+            }
+            recent.forEach(function (c) { msgs.push(c); });
+            msgs.push({ role: 'user', content: query });
+
+            const chatContainer = document.getElementById('chat-container');
+            let first = true;
+            const out = await LA.generate(msgs, {
+                maxTokens: 420,
+                temperature: 0.7,
+                onDelta: function (acc) {
+                    if (!msgEl) return;
+                    if (first) { msgEl.textContent = ''; first = false; }
+                    msgEl.textContent = acc;
+                    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            });
+
+            const text = String((out && out.text) || '').trim() || '음… 답을 못 만들었어. 다시 물어봐 줄래?';
+            if (msgEl) msgEl.innerHTML = renderMarkdown(text);
+
+            nbHistory.push({ role: 'user', content: query });
+            nbHistory.push({ role: 'assistant', content: text });
+            while (nbHistory.length > 12) nbHistory.shift();
+
+            if (thoughtEl) {
+                appendThoughtText(thoughtEl, '완료 · ' + label + ' (기기 안에서 실행, 토큰 0)');
+            }
+        }
+
+        /* 모듈이 알려 주는 진행 상황을 스위치 옆에 그대로 보여 준다 */
+        function nbWire() {
+            const LA = window.ChoiminiLocalAI;
+            if (!LA) {
+                nbState('로컬 AI 모듈을 불러오지 못했어요. 새로고침해 주세요.', true);
+                const el = document.getElementById('nobrain-check');
+                if (el) el.disabled = true;
+                return;
+            }
+            LA.bind(function () { return nbSettings; });
+            LA.onChange(function (s) {
+                if (!nbOn()) return;
+                if (s.state === 'downloading' || s.state === 'loading') {
+                    const pct = s.progress ? ' ' + s.progress + '%' : '';
+                    nbState((s.text || 'Gemma 준비 중…') + pct);
+                } else if (s.state === 'error' || s.state === 'unsupported') {
+                    nbState(s.error || '로컬 AI 오류', true);
+                }
+            });
+            // 지난번에 켜 두었으면 다시 켠다(모델은 이미 받아 둔 상태라 빠르다)
+            let was = false;
+            try { was = localStorage.getItem(NB_LS_KEY) === '1'; } catch (e) {}
+            if (was) { nbSetChecked(true); onNoBrainToggle(true); }
         }
 
         function setUIState(loading) {

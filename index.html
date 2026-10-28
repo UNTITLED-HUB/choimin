@@ -5,23 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>j-hub & Choimini Assistant</title>
     <style>
-        /* 글로벌 테마 변수 (OLED Pitch Black & Cyber Accent) */
+        /* 글로벌 테마 변수 (최미나이 사이트와 동일 테마) */
         :root {
-            --bg-color: #030712;
-            --card-bg: #0b0f19;
-            --card-hover: #111827;
-            --chat-bg: #0d111d;
-            --user-msg: #1f293d;
-            --bot-msg: #182232;
-            --text-primary: #f9fafb;
-            --text-secondary: #9ca3af;
-            --accent-color: #00f0ff;
-            --accent-pink: #f38ba8;
-            --accent-glow: rgba(0, 240, 255, 0.15);
-            --thought-bg: #050811;
-            --border-color: #1f293d;
-            --border-hover: #00f0ff;
-            --subtext-color: #a6adc8;
+            /* 최미나이(choimini) 웹사이트와 같은 값.
+               변수 이름은 그대로 둬서 아래 기존 규칙들이 전부 새 테마를 따라간다. */
+            color-scheme: dark;
+            --bg-color: #0a0b0f;
+            --card-bg: #12141c;
+            --card-hover: #1a1d29;
+            --chat-bg: #0a0b0f;
+            --user-msg: #1a1d29;
+            --bot-msg: transparent;
+            --text-primary: #e7e9f2;
+            --text-secondary: #8891a8;
+            --accent-color: #3b82f6;
+            --accent-2: #60a5fa;
+            --accent-pink: #f0575c;
+            --accent-glow: rgba(59, 130, 246, 0.22);
+            --thought-bg: #070810;
+            --border-color: #262a3a;
+            --border-hover: #3b82f6;
+            --subtext-color: #8891a8;
+            --panel-2: #1a1d29;
+            --radius: 14px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.18);
+            --shadow-md: 0 8px 28px rgba(0,0,0,.38);
+            --ease: cubic-bezier(.2,.8,.2,1);
         }
 
         * {
@@ -382,7 +391,7 @@
 
         .action-btn.active {
             background-color: var(--accent-color);
-            color: #030712;
+            color: #ffffff;
             font-weight: bold;
         }
 
@@ -468,7 +477,7 @@
         #send-btn {
             padding: 0.8rem 1.5rem;
             background-color: var(--accent-color);
-            color: #030712;
+            color: #ffffff;
             border: none;
             border-radius: 8px;
             font-weight: bold;
@@ -639,6 +648,215 @@
                 font-size: 2rem;
             }
         }
+
+        /* ============================================================
+           리디자인 — 최미나이(choimini) 웹사이트와 같은 결
+           앞의 규칙들을 덮어쓰도록 맨 뒤에 둔다. 마크업은 건드리지 않는다.
+           ============================================================ */
+
+        /* 바탕: 위쪽에 파란 기운이 아주 옅게 깔린 검정 */
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(900px 420px at 50% -220px, rgba(59,130,246,.10), transparent 70%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- 상단 바 --- */
+        header {
+            background-color: rgba(10, 11, 15, .72);
+            backdrop-filter: saturate(140%) blur(14px);
+            -webkit-backdrop-filter: saturate(140%) blur(14px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .nav-container { max-width: 1040px; padding: 0.7rem 1.25rem; }
+        .brand-logo-group { gap: 2px; }
+        .sub-brand { color: var(--text-secondary); letter-spacing: .14em; font-size: .62rem; }
+        .logo {
+            color: var(--text-primary);
+            letter-spacing: -.02em;
+            background: none;
+            -webkit-text-fill-color: currentColor;
+        }
+        .logo::before {
+            content: "j";
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.15em; height: 1.15em; margin-right: .42em;
+            border-radius: 50%;
+            background: var(--accent-color); color: #fff;
+            font-size: .72em; font-weight: 800;
+            box-shadow: 0 0 0 4px rgba(59,130,246,.16);
+            vertical-align: -0.1em;
+        }
+        .nav-links { gap: .15rem; }
+        .nav-links a {
+            padding: .42rem .7rem;
+            border-radius: 9px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: .88rem;
+            transition: background-color .16s var(--ease), color .16s var(--ease);
+        }
+        .nav-links a:hover { background: var(--panel-2); color: var(--text-primary); }
+        .nav-links a.active { background: rgba(59,130,246,.14); color: var(--accent-2); }
+        .nav-links a.active::after { display: none; }
+
+        /* --- 첫 화면 --- */
+        .hero h1 {
+            letter-spacing: -.03em;
+            background: linear-gradient(180deg, #ffffff 0%, #9fb4d8 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p { color: var(--text-secondary); }
+
+        /* --- 카드 --- */
+        .service-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            transition: transform .18s var(--ease), border-color .18s var(--ease), box-shadow .18s var(--ease), background-color .18s var(--ease);
+        }
+        .service-card:hover {
+            transform: translateY(-2px);
+            background: var(--card-hover);
+            border-color: rgba(59,130,246,.55);
+            box-shadow: var(--shadow-md);
+        }
+        .service-card:hover .service-arrow { color: var(--accent-2); }
+        .service-info h3 { letter-spacing: -.01em; }
+        .service-info p { color: var(--text-secondary); }
+        .service-arrow { color: var(--text-secondary); transition: color .18s var(--ease), transform .18s var(--ease); }
+        .service-card:hover .service-arrow { transform: translateX(3px); }
+
+        /* --- 문서/서브 페이지 --- */
+        .subpage-container { max-width: 1040px; }
+        .doc-header h2 { letter-spacing: -.02em; }
+        .doc-header p, .doc-section p, .doc-section li { color: var(--text-secondary); }
+        .doc-section h3 { color: var(--text-primary); letter-spacing: -.01em; }
+        .doc-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .doc-section code,
+        .doc-section p code { background: var(--panel-2); border-radius: 6px; padding: .12em .38em; color: var(--accent-2); }
+        .code-block {
+            background: #070810;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+        .code-block pre, .code-block code { color: #e7e9f2; }
+        .doc-table { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+        .doc-table th { background: var(--panel-2); color: var(--text-primary); }
+        .doc-table td { color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+
+        /* --- 버튼 (인라인 스타일을 쓰는 곳이 많아 모양만 다듬는다) --- */
+        .doc-section button, .service-card button {
+            border-radius: 10px !important;
+            font-weight: 600;
+            letter-spacing: -.01em;
+            box-shadow: var(--shadow-sm);
+            transition: filter .16s var(--ease), transform .16s var(--ease);
+        }
+        .doc-section button:hover, .service-card button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        /* 빨강은 "위험"으로 읽힌다. 다운로드 같은 보조 버튼은 최미나이처럼 차분한 회색으로.
+           (파랑 = 주 동작, 회색 = 보조) */
+        button[style*="--accent-pink"] {
+            background-color: var(--panel-2) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        button[style*="--accent-pink"]:hover { border-color: rgba(59,130,246,.5) !important; }
+
+        /* --- 구버전 채팅 --- */
+        #chat-container { background: var(--chat-bg); }
+        #intro-screen h1 {
+            letter-spacing: -.03em;
+            background: linear-gradient(180deg, #ffffff 0%, #9fb4d8 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #intro-screen p { color: var(--text-secondary); }
+        .message-wrapper.user .message {
+            background: var(--user-msg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px 16px 4px 16px;
+        }
+        .message-wrapper.bot .message {
+            background: transparent;
+            border: 0;
+            padding-left: 0;
+        }
+        .thought-box {
+            background: var(--thought-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+        }
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            color: var(--text-secondary);
+            transition: background-color .16s var(--ease), border-color .16s var(--ease), color .16s var(--ease);
+        }
+        .action-btn:hover { background: var(--panel-2); border-color: rgba(59,130,246,.5); color: var(--text-primary); }
+        .action-btn.active { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
+
+        /* 입력창: 최미나이처럼 둥근 한 덩어리 */
+        #nobrain-row { background: transparent; padding: .55rem 1.25rem 0; }
+        #input-container {
+            background: transparent;
+            border-top: 0;
+            padding: .75rem 1.25rem 1.1rem;
+            gap: .5rem;
+            align-items: center;
+        }
+        #user-input {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: .85rem 1.15rem;
+            transition: border-color .16s var(--ease), box-shadow .16s var(--ease);
+        }
+        #user-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        #send-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border-radius: 999px;
+            padding: .85rem 1.4rem;
+            box-shadow: var(--shadow-sm);
+            transition: filter .16s var(--ease), transform .16s var(--ease), opacity .16s var(--ease);
+        }
+        #send-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+
+        /* --- 꼬리말 · 알림 --- */
+        footer {
+            background: transparent;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        #toast {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 스크롤바도 사이트와 같은 느낌으로 */
+        * { scrollbar-width: thin; scrollbar-color: #2a3042 transparent; }
+        *::-webkit-scrollbar { width: 10px; height: 10px; }
+        *::-webkit-scrollbar-thumb { background: #2a3042; border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+        *::-webkit-scrollbar-thumb:hover { background: #38405a; background-clip: padding-box; }
+        *::-webkit-scrollbar-track { background: transparent; }
     </style>
 
 <style id="jcv2-gate-style">
@@ -792,7 +1010,7 @@
             <div class="subpage-container doc-layout">
                 <div class="doc-header">
                     <h2>jCAPTCHA</h2>
-                    <p>원본 Roblox Lua jCAPTCHA를 웹(HTML/JS)으로 이식한, 클라이언트 전용 장난 CAPTCHA 모음입니다. 문제를 풀어야 통과되는 <strong>V3</strong>와, 접속 시간대만으로 자동 통과/차단을 가르는 <strong>V2</strong> 두 가지 버전이 있고, 한 페이지에 같이 써도 서로 충돌하지 않습니다.</p>
+                    <p>원본 Roblox Lua jCAPTCHA를 웹(HTML/JS)으로 이식한, 클라이언트 전용 장난 CAPTCHA 입니다. 체크박스를 누르면 14개 문제 중 3개가 출제되고, 함정을 피해서 풀면 통과되는 <strong>V3</strong> 방식입니다.</p>
                     <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-top:1rem;">
                         <button onclick="downloadFile('Jcaptcha_Modules/JCAPTCHA.md')" style="padding:0.7rem 1.1rem; background-color: var(--accent-color); color:#030712; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 설명서 다운로드 (JCAPTCHA.md)</button>
                         <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/Jcaptcha_Modules/JCAPTCHA.md', '_blank')" style="padding:0.7rem 1.1rem; background-color:#222; color:#fff; border:1px solid var(--border-color); border-radius:8px; font-weight:bold; cursor:pointer;">🔗 GitHub에서 보기</button>
@@ -804,13 +1022,6 @@
                     <h3>🛡️ jCAPTCHA V3 데모</h3>
                     <p>아래는 문제 풀이형(V3) 데모입니다. 체크박스를 누르면 14개 문제 중 3개가 무작위로 출제되고, 각 문제마다 정해진 "함정 답"만 피하면 통과됩니다.</p>
                     <div data-jcaptcha-v3></div>
-                </div>
-
-                <!-- V2 데모: jcaptcha-v2.js가 이 페이지에서도 실제로 로드/렌더링되는지 보여주는 라이브 데모 -->
-                <div class="doc-section">
-                    <h3>🕓 jCAPTCHA V2 데모</h3>
-                    <p>아래는 접속 시간대 기반(V2) 데모입니다. 별도 조작 없이 자동으로 "검사 중" → 통과/차단 결과가 표시됩니다.</p>
-                    <div data-jcaptcha-v2></div>
                 </div>
 
                 <!-- 파일 구성 -->
@@ -827,10 +1038,6 @@
                             <tr>
                                 <td><code>jcaptcha.min.js</code></td>
                                 <td>V3 (문제 풀이형) 배포용 스크립트. 이 페이지의 데모가 사용하는 실제 파일.</td>
-                            </tr>
-                            <tr>
-                                <td><code>jcaptcha-v2.js</code></td>
-                                <td>V2 (접속 시간 자동 검사) 소스. 필요한 페이지에 별도로 추가해서 사용.</td>
                             </tr>
                             <tr>
                                 <td><code>index.html</code></td>
@@ -887,11 +1094,6 @@
                     <div class="code-block">
                         <pre><code>&lt;script src="https://untitled-hub.github.io/choimin/Jcaptcha_Modules/jcaptcha.min.js"&gt;&lt;/script&gt;</code></pre>
                     </div>
-                    <p>V2를 함께 쓰려면 같은 방식으로 <code>jcaptcha-v2.js</code>를 추가로 불러오면 됩니다.</p>
-                    <div class="code-block">
-                        <pre><code>&lt;div data-jcaptcha-v2&gt;&lt;/div&gt;
-&lt;script src="https://untitled-hub.github.io/choimin/Jcaptcha_Modules/jcaptcha-v2.js"&gt;&lt;/script&gt;</code></pre>
-                    </div>
                 </div>
 
                 <!-- 동작 방식 & 주의사항 -->
@@ -899,9 +1101,8 @@
                     <h3>⚙️ 동작 방식 및 주의사항</h3>
                     <ul>
                         <li><strong>동작 방식(V3):</strong> 체크박스 클릭 ➔ 14문제 중 3개 무작위 출제 ➔ 함정을 피해서 통과 시 <code>jcaptchaV3OnSuccess</code> 콜백 및 토큰 발급. 2개 이상 건너뛰어도 실패 처리됩니다.</li>
-                        <li><strong>동작 방식(V2):</strong> 요소가 페이지에 있으면 자동으로 "검사 중" 연출 후, 접속 시각(브라우저 로컬 시간 기준)만으로 통과/차단을 결정합니다. 실제 봇 탐지 기능은 없습니다.</li>
                         <li><strong>mp3 파일 위치:</strong> <code>gwitricks.mp3</code>는 <code>jcaptcha.min.js</code>와 같은 폴더에 있어야 문제 10번에서 음원이 재현됩니다. (문제 14번용 <code>mc1.mp3</code>는 아직 저장소에 없어 해당 문제가 나오면 음원 없이 표시됩니다.)</li>
-                        <li><strong>클라이언트 전용:</strong> V2, V3 모두 클라이언트(브라우저) 검증 전용입니다. 로그인·결제처럼 실제로 막아야 하는 상황에는 발급된 <code>token</code>을 서버에서도 검증하는 절차가 반드시 필요합니다.</li>
+                        <li><strong>클라이언트 전용:</strong> V3는 클라이언트(브라우저) 검증 전용입니다. 로그인·결제처럼 실제로 막아야 하는 상황에는 발급된 <code>token</code>을 서버에서도 검증하는 절차가 반드시 필요합니다.</li>
                     </ul>
                 </div>
             </div>
@@ -955,7 +1156,7 @@
 
                     <p style="margin-top: 1rem;">아래 버튼으로 다운로드 받을 수 있습니다.</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimin-lnc.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimin-lnc.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
                             🔗 GitHub에서 다운로드
                         </button>
                         <button onclick="downloadFile('App/choimin-lnc.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
@@ -992,7 +1193,7 @@
                 <div class="doc-section">
                     <h3>🚀 사용하기</h3>
                     <p>아래 버튼을 클릭하여 해킹 시뮬레이터에 접속하세요.</p>
-                    <button onclick="window.open('https://hacking-account.enn.kr', '_blank')" style="margin-top: 1rem; padding: 1rem 1.5rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s ease;">
+                    <button onclick="window.open('https://hacking-account.enn.kr', '_blank')" style="margin-top: 1rem; padding: 1rem 1.5rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s ease;">
                         🔗 해킹 시뮬레이터 열기
                     </button>
                 </div>
@@ -1065,8 +1266,8 @@
                     <p>Windows용 데스크톱 앱(WebView2, 약 1MB). Chat 모드(일반 채팅) / Code 모드(작업 폴더 안에서 파일 읽기·수정·명령 실행)를 지원합니다. 설치 없이 압축을 풀어 <code>ChoiminiDesktop.exe</code>를 실행하세요. (Windows 10/11 · Edge WebView2 런타임 필요 — 대부분 이미 설치되어 있습니다)</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
                         <button onclick="downloadFile('App/Choimini-Desktop-Windows.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 Windows 앱 다운로드 (.zip)</button>
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/Choimini-Desktop-Windows.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
-                        <button onclick="downloadFile('App/choimini-desktop-webview2-source.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🧾 소스 코드</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/Choimini-Desktop-Windows.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="downloadFile('App/choimini-desktop-webview2-source.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🧾 소스 코드</button>
                     </div>
                 </div>
 
@@ -1081,7 +1282,7 @@
 5. 완료</code></pre>
                     </div>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimini-extension.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/choimini-extension.zip', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
                         <button onclick="downloadFile('App/choimini-extension.zip')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 로컬 다운로드</button>
                     </div>
                 </div>
@@ -1091,7 +1292,7 @@
                     <p>Android 7.0 이상. 다운로드한 APK를 열어 설치하세요. "출처를 알 수 없는 앱" 허용 안내가 나오면 이 브라우저/파일 앱에 대해 허용해 주세요. 답변을 만드는 동안 다른 앱을 봐도 계속 이어서 받아옵니다.</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
                         <button onclick="downloadFile('App/Choimini-Android.apk')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-pink); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 Android 앱 다운로드 (.apk)</button>
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/Choimini-Android.apk', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimin/blob/main/App/Choimini-Android.apk', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub에서 다운로드</button>
                     </div>
                 </div>
 
@@ -1099,7 +1300,7 @@
                     <h3>📁 전체 소스 코드</h3>
                     <p>Android / Chrome 확장 / Desktop / Verity 설치기 / Supabase 마이그레이션 등 Choimini 관련 모든 소스는 GitHub 저장소에서 확인할 수 있습니다.</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimini-apps', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #030712; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub 저장소 열기</button>
+                        <button onclick="window.open('https://github.com/UNTITLED-HUB/choimini-apps', '_blank')" style="padding: 0.8rem 1.2rem; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔗 GitHub 저장소 열기</button>
                     </div>
                 </div>
             </div>
@@ -1116,9 +1317,8 @@
     <div id="toast">알림</div>
 
     <!-- jCAPTCHA 스크립트 로드 -->
-    <!-- V3(문제 풀이형)와 V2(접속 시간대 기반)를 이 페이지에서도 함께 불러오도록 변경 -->
+    <!-- V3(문제 풀이형) 로드 -->
     <script src="Jcaptcha_Modules/jcaptcha.min.js"></script>
-    <script src="Jcaptcha_Modules/jcaptcha-v2.js"></script>
 
     <!-- NO BRAIN: 기기 안에서 Gemma 를 돌리는 모듈 (서버로 아무것도 보내지 않는다 · 로그인 불필요) -->
     <script src="choimini-localai.js?v=20261027"></script>
@@ -2118,16 +2318,6 @@
             showToast('jCAPTCHA 인증 실패! 다시 시도합니다.');
         };
 
-        /* --- jCAPTCHA V2 성공/차단 콜백 --- */
-        window.jcaptchaV2OnSuccess = function(data) {
-            console.log('V2 인증 성공, 토큰:', data ? data.token : 'NO_TOKEN');
-            showToast('jCAPTCHA V2 인증 성공!');
-        };
-
-        window.jcaptchaV2OnBlocked = function(data) {
-            console.log('V2 접속 시간대 차단');
-            showToast('jCAPTCHA V2: 현재 접속 시간대에는 차단되었습니다.');
-        };
     </script>
 </body>
 </html>

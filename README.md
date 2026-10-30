@@ -1,18 +1,21 @@
 # j-hub (`choimin`)
 
-홈페이지와 사용자에게 제공하는 배포 파일을 보관합니다.
+j-hub는 Choimini, jCAPTCHA, 해킹 시뮬레이터와 앱 다운로드를 안내하는 홈페이지입니다.
 
 | 저장소 | 역할 |
 | --- | --- |
-| `choimin` | j-hub 홈페이지, 실행 자산, 빌드된 앱·설치용 확장 ZIP |
-| `choimini` | 최미나이 메인 웹사이트 |
-| `choimini-apps` (비공개) | 앱 소스 전체 프로젝트·개발 문서·테스트·빌드 설정 |
+| `choimin` | j-hub 홈페이지, 실행 자산, 빌드된 앱과 확장 프로그램 |
+| `choimini` | Choimini 메인 웹사이트 |
+| `hacking` | 해킹 시뮬레이터 |
+| `choimini-apps` | 앱 개발 소스와 테스트 (비공개) |
 
-## 유지하는 배포물
+## 앱 배포
 
-- `index.html`, `choimini-localai.js`: 홈페이지가 실행하는 정적 HTML/JS. 별도 번들 빌드가 없으므로 이 파일 자체가 배포물입니다.
-- `Jcaptcha_Modules/jcaptcha.min.js`, `gwitricks.mp3`, `mc1.mp3`: 홈페이지·메인 사이트가 사용하는 CAPTCHA 실행 자산.
-- `App/Choimini-Android.apk`, `App/Choimini-Desktop-Windows.zip`: 빌드된 앱.
-- `App/choimin-lnc.zip`, `App/choimini-extension.zip`: 사용자가 설치하는 확장 배포물. JavaScript를 포함해도 설치에 필요하므로 유지합니다.
+`App/`에 완성된 파일을 다음 이름으로 올립니다. 확장자를 포함해야 합니다.
 
-개발용 소스 ZIP과 개발 문서는 비공개 `choimini-apps`에서 관리합니다. 이전 시 대상 파일의 해시를 먼저 확인합니다. 기존 Git 이력은 유지합니다.
+- Android: `Choimini-Android-1.2.39.apk`
+- Desktop: `Choimini-Desktop-2.2.1.exe` 또는 `Choimini-Desktop-2.2.1.zip`
+
+숫자 버전은 예시입니다. 홈페이지는 이름에 포함된 버전을 비교하여 플랫폼별 최신 파일을 선택합니다. 버전이 붙은 파일이 없거나 목록을 가져오지 못하면 기존 `Choimini-Android.apk`와 `Choimini-Desktop-Windows.zip` 링크를 유지합니다. 기존 파일은 임의 삭제하거나 새 버전으로 표시하지 않습니다.
+
+`Jcaptcha_Modules/jcaptcha.min.js`, `gwitricks.mp3`, `mc1.mp3`는 jCAPTCHA가 사용하는 자산입니다. jCAPTCHA는 클라이언트 체험용이며 보안 인증 수단이 아닙니다. 개발용 소스와 비밀키는 이 공개 저장소에 올리지 않습니다.
